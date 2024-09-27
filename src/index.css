@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --primary-color: #837550;
+    --primary-input: #ddd9c8;
+    --primary50: #faf9f7;
+    --primary100: #efece4;
+    --primary400: #beb395;
+    --primary500: #aea07a;
+    --primary200: #dfd9ca;
+    --primary300: #cec6af;
+    --primary600: #9e8d60;
+    --primary800: #706444;
+    --neutral700: #655f5f;
+    --neutral600: #7a7474;
+    --neutral400: #7b7b7b;
+    --neutral500: #908b8b;
+    --neutral50: #a5a1a1;
+    --primary-yellow: #f79708;
+    --primary-yellow200: #fff3ec;
+    --primary-green200: #f0f5f2;
+    --secondary: #132d5e;
+    --secondary500: #487ada;
+    --success: #299764;
+    --warning: #f76808;
+}
+
+@font-face {
+    font-family: 'OUTFIT';
+    src: url('./assets/Font/Outfit/static/Outfit-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'ElMessiri';
+    src: url('./assets/Font/El_Messiri/static/ElMessiri-Regular.ttf')
+        format('truetype');
+}
+
+.font-messiri {
+    font-family: 'ElMessiri';
+}
+
+@font-face {
+    font-family: 'Majalla';
+    src: url('./assets/Font/Majalla/majalla.ttf') format('truetype');
+}
+
+.font-majalla {
+    font-family: 'Majalla';
+}
+
+.font-arial {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    font-family: 'OUTFIT';
+    scroll-behavior: smooth;
+    background-color: #eeeadd;
+    background-image: url('./assets/BodyImage.svg'),
+        linear-gradient(to bottom, #eeeadd 0%, #eeeadd 100%);
+    background-repeat: no-repeat, no-repeat;
+    background-position: top right, top left;
+    background-size: auto, cover;
+    max-width: 1920px;
+    margin: auto;
+}
+
+.global-scroll::-webkit-scrollbar {
+    width: 9px;
+    height: 13px;
+    cursor: pointer;
+}
+
+.global-scroll::-webkit-scrollbar-thumb {
+    background-color: #9e8d60;
+    background-clip: content-box;
+    border-radius: 10px;
+}
+
+.global-scroll::-webkit-scrollbar-track {
+    background-color: #0000001a;
+    border-radius: 10px;
+}
+
+.dgradient {
+    background: linear-gradient(
+        221.52deg,
+        #eee8da 4.24%,
+        rgba(237, 230, 214, 0.3) 88.12%
+    );
+}
+
+.dgradient2 {
+    background: linear-gradient(90deg, #eee8da 0%, #ede6d6 100%);
+}
+
+.section2 {
+    background: linear-gradient(90deg, #f2efe6 0%, rgba(242, 232, 203, 0) 100%);
+}
+
+.shadow-card {
+    box-shadow: 0px 30px 60px 0px #ccc09533;
+}
+
+.landoverview {
+    background: url('./assets/Razzzee.svg') no-repeat left center, #fbfaf7;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.map-container {
+    width: 100%;
+    height: 100%;
+}
+
+.card-shadow {
+    box-shadow: 0px 30px 60px 0px rgba(204, 192, 149, 0.2);
+}
+
+/* .card-gradient {
+    background: linear-gradient(
+            149deg,
+            rgba(255, 237, 189, 0) 18.59%,
+            rgba(255, 237, 189, 0.24) 96.96%
+        ),
+        #fff;
+} */
+.salescard {
+    border-radius: 16px;
+    border: 1px solid var(--Primary-Primary200, #dfd9ca);
+    background: #fff;
+    box-shadow: 0px 30px 60px 0px rgba(204, 192, 149, 0.2);
+}
+
+.titlecard {
+    /* box-shadow: 0px 30px 60px 0px rgba(204, 192, 149, 0.2); */
+    border-radius: 0px 0px 24px 24px;
+    background: #f0f5f2;
+}
+
+.dashboardCard {
+    box-shadow: 0px 10px 24px 0px rgba(22, 22, 22, 0.02);
+    cursor: pointer;
+}
+
+.landdocs {
+    fill: #fff;
+    filter: drop-shadow(0px_30px_60px_rgba (204, 192, 149, 0.2));
+    -webkit-filter: drop-shadow(0px_30px_60px_rgba (204, 192, 149, 0.2));
+}
+
+.finance-dot-shadow {
+    box-shadow: 2px 0px 14px 7px #ceaf5e26;
+}
+
+.sideNavBG {
+    background-image: url('/src/assets/SideNavBar/background.png');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 100%;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}

@@ -1,0 +1,37 @@
+trigger:
+    - PRODUCTION
+
+stages:
+    - stage: BuildDeploy
+      jobs:
+          - job: Build
+            pool:
+                vmImage: 'ubuntu-latest'
+
+            steps:
+                - task: Npm@1
+                  inputs:
+                      command: 'install'
+                - task: Npm@1
+                  inputs:
+                      command: 'custom'
+                      customCommand: 'run build'
+                  env:
+                    VITE_BASE_URL: 'https://awjlbbe.azurewebsites.net/api/' 
+                   
+                - task: PublishBuildArtifacts@1
+                  inputs:
+                      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+                      ArtifactName: 'dist'
+                      publishLocation: 'Container'
+
+                - task: AzureRmWebAppDeployment@4
+                  inputs:
+                    ConnectionType: 'AzureRM'
+                    azureSubscription: 'LANDBANK'
+                    appType: 'webApp'
+                    WebAppName: 'awjLbWebApp'
+                    deployToSlotOrASE: true
+                    ResourceGroupName: 'AWJ_LandBank'
+                    SlotName: 'production'
+                    packageForLinux: '$(System.DefaultWorkingDirectory)/dist'
