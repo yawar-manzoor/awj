@@ -22,7 +22,7 @@ FROM nginx:alpine
 # Copy built files from the build stage to Nginx's web root directory
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Expose the port that Nginx is listening on
+# Expose the port that Nginx is listening on.
 EXPOSE 80
 
 # Nginx will automatically serve the static files, no need for CMD here
