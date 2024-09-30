@@ -12,14 +12,18 @@ import {
     isRoleEditorApprover,
     isStatusDataNotSubmittedOrSentBack,
 } from '../../lib/AcessCheck'
+import { useState } from 'react'
 
 const SalesCard = () => {
     const department = localStorage.getItem('department')
     const roleName = localStorage.getItem('roleName')
     const dispatch = useDispatch()
+    const [openDropdown, setOpenDropdown] = useState(null)
     const isEditable = useSelector((state) => state?.forms?.isEditable)
     const salesDetail =
         useSelector((state) => state.forms?.LandAssetInfo?.saleDetails) || {}
+    const nede = useSelector((state) => state.forms?.salesData) || {}
+    console.log({ nede }, 'salesdata')
     const LandAssetInfo =
         useSelector((state) => state.forms?.LandAssetInfo) || {}
 
@@ -63,6 +67,8 @@ const SalesCard = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
+        console.log({ name, value })
+
         if (name === 'salesMethod') {
             const selectedMethod = SalesMethodData?.data.find(
                 (item) => item.status === value
@@ -86,7 +92,8 @@ const SalesCard = () => {
                 (item) => item.status === value
             )
             if (selectedAgent) {
-                dispatch(updateSalesData({ agentName: selectedAgent.id }))
+                console.log(selectedAgent.id, 'agent id')
+                dispatch(updateSalesData({ agentNameId: selectedAgent.id }))
             }
         }
         if (name === 'salesStatus') {
@@ -97,7 +104,7 @@ const SalesCard = () => {
                 dispatch(updateSalesData({ salesStatusId: selectedStatus.id }))
             }
         }
-
+        dispatch(updateSalesData({ [name]: value }))
         dispatch(
             updateLandAssetInfo({
                 saleDetails: {
@@ -141,6 +148,8 @@ const SalesCard = () => {
                             options={salesMethodOptions}
                             label=""
                             className="flex-1"
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <span className="font-bold text-lg text-primary-600 flex-1">
@@ -186,6 +195,8 @@ const SalesCard = () => {
                             options={agentNameOptions}
                             label=""
                             className="flex-1"
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <span className="font-bold text-lg text-primary-600 flex-1">
@@ -205,6 +216,8 @@ const SalesCard = () => {
                             label=""
                             value={salesDetail?.salesStatus || ''}
                             className="flex-1"
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <div className="flex gap-2 flex-1">

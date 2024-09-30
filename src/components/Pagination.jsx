@@ -55,7 +55,7 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
     return (
         <div className="flex items-center space-x-2">
             <button
-                className={`px-3 py-3 inline-flex items-center gap-x-1 ${
+                className={`px-4 py-3 inline-flex items-center gap-x-1 mr-8 ${
                     currentPage === 1 ? 'text-[#7B7B7B]' : 'text-black'
                 }  border border-[#DDD9C8] rounded-[10px]`}
                 onClick={handlePrevious}
@@ -70,9 +70,9 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
             {getPageNumbers().map((page, index) => (
                 <button
                     key={index}
-                    className={`px-4 py-3 border rounded-[10px] ${
+                    className={`p-3  rounded-[10px] ${
                         page === currentPage
-                            ? 'bg-white text-black'
+                            ? 'bg-white text-black border'
                             : 'text-[#7B7B7B]'
                     }`}
                     onClick={() => {
@@ -85,9 +85,9 @@ const Pagination = ({ totalPages, currentPage, onPageChange }) => {
             ))}
 
             <button
-                className={`px-3 py-3 inline-flex items-center gap-x-1 ${
+                className={`px-4 py-3 inline-flex items-center gap-x-1  ${
                     currentPage === totalPages ? 'text-[#7B7B7B]' : 'text-black'
-                }  border border-[#DDD9C8] rounded-[10px]`}
+                }  border border-[#DDD9C8] rounded-[10px] !ml-8`}
                 onClick={handleNext}
                 disabled={currentPage === totalPages}
             >

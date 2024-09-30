@@ -19,10 +19,12 @@ function OwnershipAddNewModal({
         deedNumber: '',
         deedOwner: '',
         deedDate: '',
+        deedType: '',
     })
     const [isUpdating, setIsUpdating] = useState(false)
     const uploadFileRef = useRef()
     const dispatch = useDispatch()
+    const token = localStorage.getItem('token')
     const isEditable = useSelector((state) => state.forms.isEditable)
 
     const { data: deedOwner, isLoading: isLoading2 } = useStatusData(
@@ -31,6 +33,13 @@ function OwnershipAddNewModal({
     )
     let OwnerOptions = isEditable
         ? generateOptions(deedOwner?.data, isLoading2, 'status', 'status')
+        : []
+    const { data: deedType, isLoading: isLoading4 } = useStatusData(
+        'TDT',
+        isEditable
+    )
+    let tdTypeOptions = isEditable
+        ? generateOptions(deedType?.data, isLoading2, 'status', 'status')
         : []
 
     console.log(OwnerOptions, 'owneroptions')
@@ -55,7 +64,7 @@ function OwnershipAddNewModal({
             deedNumber: formDetails.deedNumber,
             deedDate: hijriDate,
             deedOwner: +formDetails.deedOwner,
-            deedType: null,
+            deedType: +formDetails.deedType,
             deedUrl: null,
             deedSequence: sequenceNumber,
         }
@@ -65,6 +74,7 @@ function OwnershipAddNewModal({
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(payload),
         })
@@ -88,7 +98,7 @@ function OwnershipAddNewModal({
                 onClick={() => setShowModal(!showModal)}
                 className="fixed inset-0 w-full h-full bg-black/50 z-40"
             ></div>
-            <div className="fixed w-1/2   bg-white  rounded-lg z-50 top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 px-7 py-6 space-y-8">
+            <div className="fixed w-1/2   bg-white  rounded-[32px] z-50 top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 px-7 py-6 space-y-8">
                 <div className="flex items-center justify-between border-b border-[#AEA07A] pb-8">
                     <h3 className="text-[#4E4949] font-bold text-[32px]">
                         Add New Ownership Details
@@ -101,10 +111,10 @@ function OwnershipAddNewModal({
                     </button>
                 </div>
                 <form className="flex flex-col gap-4 " onSubmit={handleSubmit}>
-                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-[#7B7B7B] placeholder:font-normal placeholder:text-base">
+                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-primary-[#AEA07A] placeholder:font-normal placeholder:text-base">
                         <label htmlFor="">TD Number</label>
                         <input
-                            className="px-4 py-3 border border-[#BEB395] rounded-lg focus:outline-none"
+                            className="px-4 py-[6px] border border-[#BEB395] rounded-lg focus:outline-none"
                             type="text"
                             placeholder="Enter TD Number"
                             name="deedNumber"
@@ -112,10 +122,10 @@ function OwnershipAddNewModal({
                             onChange={handleChange}
                         />
                     </div>
-                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-[#7B7B7B] placeholder:font-normal placeholder:text-base">
+                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-primary-[#AEA07A] placeholder:font-normal placeholder:text-base">
                         <label htmlFor="">TD Owner</label>
                         {/* <input
-                            className="px-4 py-3 border border-[#BEB395] rounded-lg focus:outline-none"
+                            className="px-4 py-[6px] border border-[#BEB395] rounded-lg focus:outline-none"
                             type="text"
                             placeholder="Enter TD Owner"
                             name="deedOwner"
@@ -125,17 +135,17 @@ function OwnershipAddNewModal({
                         <select
                             onChange={handleChange}
                             name="deedOwner"
-                            className="px-4 py-3 border border-[#BEB395] rounded-lg focus:outline-none"
+                            className="px-4 py-[6px] border border-[#BEB395] rounded-lg focus:outline-none"
                         >
                             {OwnerOptions.map((item) => (
                                 <option value={item.id}>{item.label}</option>
                             ))}
                         </select>
                     </div>
-                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-[#7B7B7B] placeholder:font-normal placeholder:text-base">
+                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-primary-[#AEA07A] placeholder:font-normal placeholder:text-base">
                         <label htmlFor="">TD Date</label>
                         <input
-                            className="px-4 py-3 border border-[#BEB395] rounded-lg focus:outline-none"
+                            className="px-4 py-[6px] border border-[#BEB395] rounded-lg focus:outline-none"
                             type="date"
                             placeholder="Enter TD Date"
                             name="deedDate"
@@ -143,16 +153,29 @@ function OwnershipAddNewModal({
                             onChange={handleChange}
                         />
                     </div>
-                    <div className="relative flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-[#7B7B7B] placeholder:font-normal placeholder:text-base">
+                    <div className="flex flex-col gap-[10px] text-[#7B7B7B] font-normal text-base placeholder:text-primary-[#AEA07A] placeholder:font-normal placeholder:text-base">
+                        <label htmlFor="">TD Type</label>
+
+                        <select
+                            onChange={handleChange}
+                            name="deedType"
+                            className="px-4 py-[6px] border border-[#BEB395] rounded-lg focus:outline-none"
+                        >
+                            {tdTypeOptions.map((item) => (
+                                <option value={item.id}>{item.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="relative flex flex-col gap-[10px] my-4 text-[#7B7B7B] font-normal text-base placeholder:text-primary-[#AEA07A] placeholder:font-normal placeholder:text-base">
                         <div
                             onClick={handleFileUpload}
-                            className="absolute inset-0 rounded-lg bg-[#DFD9CA] flex items-center justify-center text-[#837550] text-base font-semibold"
+                            className="absolute inset-0 rounded-[4px] bg-[#DFD9CA] flex items-center justify-center text-[#837550] text-base font-semibold"
                         >
                             <span>Upload TD Document</span>
                         </div>
                         <input
                             ref={uploadFileRef}
-                            className="px-4 py-3 border border-[#BEB395] rounded-lg"
+                            className="px-4 py-[6px] border border-[#BEB395] rounded-lg"
                             type="file"
                             placeholder="Enter TD Date"
                             required={false}

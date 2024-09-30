@@ -5,6 +5,7 @@ export default {
         extend: {
             spacing: {
                 24: '85px',
+                32: '150px',
             },
             backgroundImage: {
                 'custom-gradient-bottom-right':
@@ -49,7 +50,7 @@ export default {
                 xl: '1200px',
                 '2xl': '1400px',
                 '3xl': '1500px',
-                '4xl': '2200px', // Adjust the pixel value to your desired breakpoint
+                '4xl': '1600px', // Adjust the pixel value to your desired breakpoint
             },
             content: {
                 link: 'url("assets/Arrow.svg")',

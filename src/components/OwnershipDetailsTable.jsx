@@ -11,10 +11,12 @@ import { setEditable } from '../features/forms/formSlice'
 import { gregorianToHijri } from '../lib/utils'
 import { baseURL } from '../lib/global'
 import PulseLoader from 'react-spinners/PulseLoader'
+import ViewIcon from '../assets/View.svg'
 
 function OwnershipDetailsTable({ refetch }) {
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
+    const token = localStorage.getItem('token')
     const [showModal, setShowModal] = useState(false)
     const [isEdit, setIsEdit] = useState(false)
     const [deedToBeEditedIndex, setDeedToBeEditedIndex] = useState()
@@ -107,6 +109,7 @@ function OwnershipDetailsTable({ refetch }) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(payload),
         })
@@ -141,7 +144,7 @@ function OwnershipDetailsTable({ refetch }) {
                     <thead className="text-left text-[#837550] text-[16px] font-medium ">
                         <tr className="">
                             <th className="border-b  border-[#837550] ">
-                                <div className="">
+                                <div className="flex">
                                     <span className="mr-10 ml-4 font-normal">
                                         #
                                     </span>
@@ -149,27 +152,27 @@ function OwnershipDetailsTable({ refetch }) {
                                 </div>
                             </th>
                             <th className="border-b border-[#837550] ">
-                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]">
+                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px] whitespace-nowrap">
                                     TD Owner
                                 </div>
                             </th>
                             <th className="border-b border-[#837550] ">
-                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]">
+                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px] whitespace-nowrap">
                                     TD Type
                                 </div>
                             </th>
                             <th className="border-b border-[#837550] ">
-                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]">
+                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px] whitespace-nowrap">
                                     TD Date
                                 </div>
                             </th>
                             <th className="border-b border-[#837550] ">
-                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]">
+                                <div className="border-x border-[#AEA07A]  px-6 py-2 my-[10px] whitespace-nowrap">
                                     Updated By
                                 </div>
                             </th>
                             <th className="border-b border-[#837550] w-[10%]">
-                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]">
+                                <div className=" border-[#AEA07A]  px-8 py-2 my-[10px] whitespace-nowrap">
                                     TD File
                                 </div>
                             </th>
@@ -183,15 +186,7 @@ function OwnershipDetailsTable({ refetch }) {
                                         : ''
                                 }`}
                             >
-                                <div
-                                    onClick={() =>
-                                        console.log(
-                                            !isEditable,
-                                            hasOwnershipEditPermission
-                                        )
-                                    }
-                                    className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]"
-                                >
+                                <div className="border-s border-[#AEA07A]  px-6 py-2 my-[10px]">
                                     Update
                                 </div>
                             </th>
@@ -238,13 +233,13 @@ function OwnershipDetailsTable({ refetch }) {
                                             : 'text-[#7A7474]'
                                     } bg-[#EFECE4] py-3 text-base`}
                                 >
-                                    <div className="border-s border-[#CEC6AF] px-6 py-1">
+                                    <div className="border-s border-[#CEC6AF] px-6 ">
                                         {isEdit &&
                                         isEditable &&
                                         deedToBeEditedIndex === index ? (
                                             <select
                                                 name="owner"
-                                                className="text-base text-[#7A7474] py-1 px-4 border border-[#BEB395] rounded-lg max-w-[150px] focus:outline-none"
+                                                className="text-base text-[#7A7474] py-[6px] px-4 border border-[#BEB395] rounded-lg max-w-[150px] focus:outline-none"
                                                 value={
                                                     item?.owner
                                                         ? item?.owner
@@ -281,13 +276,13 @@ function OwnershipDetailsTable({ refetch }) {
                                             : 'text-[#7A7474]'
                                     } bg-[#EFECE4] py-3 text-base`}
                                 >
-                                    <div className="border-s border-[#CEC6AF] px-6 py-1">
+                                    <div className="border-s border-[#CEC6AF] px-6 ">
                                         {isEdit &&
                                         isEditable &&
                                         deedToBeEditedIndex === index ? (
                                             <select
                                                 name="deedType"
-                                                className="text-base text-[#7A7474] py-1 px-4 border border-[#BEB395] rounded-lg max-w-[150px] focus:outline-none"
+                                                className="text-base text-[#7A7474] py-[6px] px-4 border border-[#BEB395] rounded-lg max-w-[150px] focus:outline-none"
                                                 value={
                                                     item?.deedType
                                                         ? item?.deedType
@@ -324,7 +319,7 @@ function OwnershipDetailsTable({ refetch }) {
                                             : 'text-[#7A7474]'
                                     } bg-[#EFECE4] py-3 text-base`}
                                 >
-                                    <div className="border-s border-[#CEC6AF] px-6 py-1">
+                                    <div className="border-s border-[#CEC6AF] px-6 ">
                                         {isEdit &&
                                         isEditable &&
                                         deedToBeEditedIndex === index ? (
@@ -345,7 +340,7 @@ function OwnershipDetailsTable({ refetch }) {
                                     </div>
                                 </td>
                                 <td className="bg-[#EFECE4]  text-base text-[#7A7474] ">
-                                    <div className="w-full flex border-s border-[#CEC6AF] px-6 py-1">
+                                    <div className="w-full flex border-s border-x-[1px] border-[#CEC6AF] px-6 ">
                                         {/* {isEdit &&
                                         isEditable &&
                                         deedToBeEditedIndex === index ? (
@@ -376,7 +371,7 @@ function OwnershipDetailsTable({ refetch }) {
                                         isEditable ? '' : 'rounded-e-[8px]'
                                     }`}
                                 >
-                                    <div className="pl-6 px-2 border-s border-[#CEC6AF]">
+                                    <div className=" px-2 py-1  border-[#CEC6AF] text-right ">
                                         <button
                                             disabled={true}
                                             className="bg-[#DFD9CA] text-[#837550] px-4 py-1 rounded font-semibold "
@@ -386,12 +381,22 @@ function OwnershipDetailsTable({ refetch }) {
                                             (roleName === 'Editor' ||
                                                 (roleName === 'Approver' &&
                                                     landInfo?.status ===
-                                                        'Data Not Submitted'))
-                                                ? 'Upload'
-                                                : 'Download'}
+                                                        'Data Not Submitted')) ? (
+                                                'Upload'
+                                            ) : (
+                                                <div className="flex gap-2 items-center ">
+                                                    <img
+                                                        src={ViewIcon}
+                                                        alt="View"
+                                                        className="size-6"
+                                                    />
+                                                    <span>View</span>
+                                                </div>
+                                            )}
                                         </button>
                                     </div>
                                 </td>
+
                                 <td
                                     className={`bg-[#EFECE4] text-base text-[#7A7474] rounded-e-[8px] ${
                                         !isEditable && 'hidden'

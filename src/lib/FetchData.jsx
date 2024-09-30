@@ -6,15 +6,14 @@ const fetchData = async ({ queryKey }) => {
     const token = queryKey[2]
     const response = await axios.get(url, {
         headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
         },
     })
     return response.data
 }
-const useFetchData = (url) => {
+const useFetchData = (url, token) => {
     const { data, error, isLoading, isError, refetch } = useQuery({
-        queryKey: ['fetchData', url],
+        queryKey: ['fetchData', url, token],
         queryFn: fetchData,
         enabled: true,
         cacheTime: 0,

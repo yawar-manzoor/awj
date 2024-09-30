@@ -100,7 +100,14 @@ function Timeline({ parentWidth, parentPadding }) {
         const fetchOwnershipDetails = async () => {
             try {
                 const response = await axios.get(
-                    `/Land/GetDeedTimelineValues?LandId=${landId}`
+                    `/Land/GetDeedTimelineValues?LandId=${landId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem(
+                                'token'
+                            )}`,
+                        },
+                    }
                 )
                 const transformedData = response.data.data.map(
                     (item, index) => ({

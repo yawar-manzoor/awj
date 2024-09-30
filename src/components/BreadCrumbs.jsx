@@ -8,6 +8,7 @@ function BreadCrumbs() {
     const location = useLocation()
     // const routes =
     //     location.pathname === '/' ? undefined : location.pathname.split('/')
+    const roleName = localStorage.getItem('roleName')
 
     const routes = useSelector((state) => state.breadcrumb.breadcrumbRoutes)
     const navigate = useNavigate()
@@ -25,10 +26,16 @@ function BreadCrumbs() {
     }
 
     return (
-        <ul className="flex items-center gap-2 px-12 2xl:px-24 text-[16px]  pt-8 pb-3">
+        <ul className="flex items-center gap-2 px-12 2xl:px-24 4xl:px-32 text-[16px]  pt-8 pb-3">
             <li
                 className="flex items-center gap-2 cursor-pointer"
-                onClick={() => navigate('/landbank')}
+                onClick={() => {
+                    if (roleName === 'Admin') {
+                        navigate('/landadmin')
+                    } else {
+                        navigate('/landbank')
+                    }
+                }}
             >
                 <img src={HomeIconSvg} alt="home-icon" />
                 <span className="text-[#837550]">Homepage</span>

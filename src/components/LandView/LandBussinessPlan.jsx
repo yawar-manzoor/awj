@@ -11,12 +11,15 @@ import {
     isRoleEditorApprover,
     isStatusDataNotSubmittedOrSentBack,
 } from '../../lib/AcessCheck'
+import { useState } from 'react'
 
 export const LandBussinessPlan = () => {
     const dispatch = useDispatch()
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
     const isEditable = useSelector((state) => state.forms.isEditable)
+    const [openDropdown, setOpenDropdown] = useState(null)
+
     const landAssetInfo =
         useSelector((state) => state?.forms?.LandAssetInfo) || {}
 
@@ -190,6 +193,8 @@ export const LandBussinessPlan = () => {
                             options={LandUseOptions}
                             value={landUse}
                             onChange={handleInputChange}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <p className={getTextClass(isLandUseEdited)}>
@@ -205,6 +210,8 @@ export const LandBussinessPlan = () => {
                             options={LandStatusOptions}
                             value={landStatus}
                             onChange={handleInputChange}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <p className={getTextClass(isLandStatusEdited)}>
@@ -220,6 +227,8 @@ export const LandBussinessPlan = () => {
                             options={LandTypeOptions}
                             value={landType}
                             onChange={handleInputChange}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <p
@@ -239,6 +248,8 @@ export const LandBussinessPlan = () => {
                             value={businessPlan}
                             options={businessPlanOptions}
                             onChange={handleInputChange}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <p className={getTextClass(isBusinessPlanEdited)}>
@@ -255,6 +266,8 @@ export const LandBussinessPlan = () => {
                             options={BussinessplanstatusOptions}
                             value={businessPlanStatus}
                             onChange={handleInputChange}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <p className={getTextClass(isBusinessPlanStatusEdited)}>
@@ -270,6 +283,8 @@ export const LandBussinessPlan = () => {
                             value={businessPlanDetail}
                             onChange={handleInputChange}
                             options={BussinessPlanDetailsOptions}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <p

@@ -29,7 +29,7 @@ function LandSplitting() {
         assetId: 'RUH-RBWA-SB01-00012',
     }
     return (
-        <div className="px-12 2xl:px-24 py-6">
+        <div className="px-12 2xl:px-24 4xl:px-32 py-6">
             {showModal && (
                 <AddLocationModal
                     showModal={showModal}

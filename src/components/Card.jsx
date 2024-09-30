@@ -57,7 +57,6 @@ const Card = ({
     }
     console.log(cityId)
     const x = useSelector((state) => state.breadcrumb.breadcrumbRoutes)
-    console.log(x, 'this is x')
 
     // added pusged commit
     return (
@@ -65,9 +64,9 @@ const Card = ({
             onClick={() =>
                 handleAssetClick(assetData, selectedAt, selectedCt, selectedDt)
             }
-            className="max-w-sm py-4 rounded-2xl overflow-hidden border hover:border-primary-300 hover:bg-custom-gradient-bottom-right bg-white cursor-pointer flex flex-col"
+            className="max-w-sm py-[40px] rounded-2xl overflow-hidden hover:border-primary-300 hover:bg-custom-gradient-bottom-right bg-white cursor-pointer flex flex-col"
         >
-            <div className="flex px-7 items-start">
+            <div className="flex px-[40px] items-start">
                 {Image && (
                     <img
                         className="w-16 h-16"
@@ -93,7 +92,7 @@ const Card = ({
                 </div>
             </div>
 
-            <div className="px-7 py-2 bg-primary-50 items-center flex">
+            <div className="px-[40px] py-2 bg-primary-50 items-center flex">
                 <div className="bg-primary-100 rounded-full">
                     {icon && (
                         <img
@@ -115,7 +114,7 @@ const Card = ({
                     )}
                 </div>
             </div>
-            <div className="px-7 py-4 flex items-center">
+            <div className="px-[40px] py-4 flex items-center">
                 {M2 && <img className="h-[24px]" src={M2} />}
                 {m2Data && (
                     <h2 className="ps-4 font-bold text-neutral-700">
@@ -124,7 +123,7 @@ const Card = ({
                 )}
                 {/* <h2 className="ps-4">{m2Data}</h2> */}
             </div>
-            <div className="px-7 flex">
+            <div className="px-[40px] flex">
                 {gpsIcon && (
                     <img className="h-[24px]" src={gpsIcon} alt={location} />
                 )}

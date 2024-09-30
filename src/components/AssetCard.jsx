@@ -139,7 +139,7 @@ const AssetCard = ({ assetInfo, isEditor, isApprover }) => {
 
     return (
         <div
-            className="flex flex-col bg-white border hover:border-primary-300 hover:bg-custom-gradient-bottom-right  rounded-2xl cursor-pointer py-6 space-y-4 "
+            className="flex flex-col bg-white hover:border-primary-300 hover:bg-custom-gradient-bottom-right  rounded-2xl cursor-pointer py-6 space-y-4"
             onClick={() => handleNavigate(assetInfo.landId)}
         >
             {isEditor && (
@@ -284,7 +284,7 @@ const AssetCard = ({ assetInfo, isEditor, isApprover }) => {
                 </div>
             ) : null}
             <div className="text-primary-Main grid grid-cols-2 gap-4 items-center text-sm px-4">
-                <span className="font-semibold inline-flex items-center gap-x-2 rounded-full bg-primary-100 ps-1 py-2">
+                <span className="font-semibold inline-flex items-center gap-x-2 rounded-full bg-primary-100 ps-1 py-1">
                     <span className="rounded-full bg-primary-200 w-10 h-10 flex justify-center items-center">
                         <img
                             src={getLandUseIcon(assetInfo.landUse)}
@@ -298,7 +298,7 @@ const AssetCard = ({ assetInfo, isEditor, isApprover }) => {
                         assetInfo.wltStatus == 'Yes'
                             ? 'bg-[#2997641A] text-success '
                             : 'bg-[#F768081A] text-warning'
-                    } inline-flex items-center gap-x-2 rounded-full  ps-1 py-2`}
+                    } inline-flex items-center gap-x-2 rounded-full  ps-1 py-1`}
                 >
                     <span
                         className={`rounded-full ${
@@ -341,14 +341,14 @@ const AssetCard = ({ assetInfo, isEditor, isApprover }) => {
                     </span>{' '}
                     WLT {assetInfo.wltStatus}
                 </span>
-                <span className="font-semibold inline-flex items-center gap-x-2 rounded-full bg-primary-100  ps-1 py-2">
+                <span className="font-semibold inline-flex items-center gap-x-2 rounded-full bg-primary-100  ps-1 py-1">
                     <span className="rounded-full bg-primary-200 w-10 h-10 flex justify-center items-center">
                         {' '}
                         <img src={Location} loading="lazy" />{' '}
                     </span>{' '}
                     {assetInfo.cityName}
                 </span>
-                <span className="font-semibold inline-flex items-center gap-x-2 rounded-full bg-primary-100  ps-1 py-2">
+                <span className="font-semibold inline-flex items-center gap-x-2 rounded-full bg-primary-100  ps-1 py-1">
                     <span className="rounded-full bg-primary-200 w-10 h-10 flex justify-center items-center">
                         {' '}
                         <img src={AreaIcon} loading="lazy" />{' '}

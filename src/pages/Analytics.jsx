@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AssetCard from '../components/AssetCard'
 import CloseIcon from '../../src/assets/AssetCardIcons/close-circle.svg'
 import { useLocation } from 'react-router-dom'
@@ -28,7 +28,7 @@ const options = [
 const Analytics = () => {
     const location = useLocation()
     const [role, setRole] = useState('')
-
+    const token = localStorage.getItem('token')
     useEffect(() => {
         setRole(localStorage.getItem('roleName'))
     }, [])
@@ -42,8 +42,8 @@ const Analytics = () => {
         cityId,
         selectedCity,
         selectedDistrict,
+        actionAssetId,
     } = location.state || {}
-    console.log(cityId)
 
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedFilters, setSelectedFilters] = useState({
@@ -70,7 +70,6 @@ const Analytics = () => {
         sortBy: false,
     })
     const [selectedLandUse, setSelectedLandUse] = useState(null)
-    console.log('🚀 ~ Analytics ~ selectedLandUse:', selectedLandUse)
     const [isLandUseDropdownOpen, setIsLandUseDropdownOpen] = useState(false)
     const [isPopUpOpen, setIsPopUpOpen] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
@@ -79,6 +78,14 @@ const Analytics = () => {
     const [totalItems, setTotalItems] = useState(0)
     const [selectedOption, setSelectedOptions] = useState(options[0])
     const [isOpen, setIsOpen] = useState(false)
+    const [districtUrl, setDistrictUrl] = useState(null)
+    const assetRef = useRef(null)
+    const cityRef = useRef(null)
+    const districtRef = useRef(null)
+    const ownerRef = useRef(null)
+    const wltStatusRef = useRef(null)
+    const landUseRef = useRef(null)
+    const businessPlanRef = useRef(null)
 
     const roleName = localStorage.getItem('roleName')
 
@@ -90,7 +97,7 @@ const Analytics = () => {
     }
     const params = new URLSearchParams()
 
-    let assetId = initialData?.assetId
+    let assetId = actionAssetId || initialData?.assetId
     if (selectedFilters?.asset?.value?.id) {
         assetId = selectedFilters.asset.value.id
     }
@@ -99,10 +106,9 @@ const Analytics = () => {
         params.append('assetId', assetId)
     }
 
-    if (selectedFilters?.city) {
-        if (selectedFilters.city.value?.id) {
-            params.append('cityId', selectedFilters.city.value.id)
-        }
+    if (selectedFilters?.city?.value?.id) {
+        params.delete('cityId')
+        params.append('cityId', selectedFilters.city.value.id)
     } else if (cityId) {
         params.append('cityId', cityId)
     }
@@ -141,29 +147,52 @@ const Analytics = () => {
         data: assetsData,
         isError,
         isLoading,
-    } = useFetchData(roleName === 'Editor' ? apiUrlNonViewer : apiUrlViewer)
-    const { data: assets } = useFetchData(`${baseURL}Asset/GetAllAssets`)
-    const { data: cities } = useFetchData(`${baseURL}Asset/GetAllCities`)
-    const { data: districts } = useFetchData(
-        selectedFilters.city
-            ? `${baseURL}Asset/GetDistrictsByCityId?cityId=${selectedFilters?.city?.value.id}`
-            : null
+    } = useFetchData(
+        roleName === 'Editor' ? apiUrlNonViewer : apiUrlViewer,
+        token
     )
+    const { data: assets } = useFetchData(`${baseURL}Asset/GetAllAssets`, token)
+    const { data: cities } = useFetchData(`${baseURL}Asset/GetAllCities`, token)
+    // const { data: districts } = useFetchData(
+    //     selectedFilters.city
+    //         ? `${baseURL}Asset/GetDistrictsByCityId?cityId=${
+    //               cityId ? cityId : selectedFilters?.city?.value?.id
+    //           }`
+    //         : null,
+    //     token
+    // )
     const { data: landData } = useFetchData(
-        `${baseURL}Asset/GetLandUses?statusType=landuse`
+        `${baseURL}Asset/GetLandUses?statusType=landuse`,
+        token
     )
-    console.log(landData)
+    console.log(selectedFilters?.city?.value?.id, 'city')
 
     const { data: planData } = useFetchData(
-        `${baseURL}Asset/GetStatus?statusType=businessPlan`
+        `${baseURL}Asset/GetStatus?statusType=businessPlan`,
+        token
     )
     const { data: wltStatusData } = useFetchData(
-        `${baseURL}Asset/GetStatus?statusType=wltstatus`
+        `${baseURL}Asset/GetStatus?statusType=wltstatus`,
+        token
     )
     const { data: ownerData } = useFetchData(
-        `${baseURL}Asset/GetStatus?statusType=owner`
+        `${baseURL}Asset/GetStatus?statusType=owner`,
+        token
     )
 
+    useEffect(() => {
+        const newCityId = selectedFilters?.city?.value?.id || cityId
+
+        if (newCityId) {
+            setDistrictUrl(
+                `${baseURL}Asset/GetDistrictsByCityId?cityId=${newCityId}`
+            )
+        } else {
+            setDistrictUrl(null)
+        }
+    }, [selectedFilters?.city?.value?.id, cityId])
+
+    const { data: districts } = useFetchData(districtUrl, token)
     const handleLandUseSelect = (item) => {
         console.log('🚀 ~ handleLandUseSelect ~ item:', item)
         setSelectedLandUse(item)
@@ -283,10 +312,33 @@ const Analytics = () => {
             setTotalItems(assetsData?.totalCount)
         }
     }, [assetsData?.totalCount, itemsPerPage, currentPage])
+    const handleClickOutside = (event, ref, dropdownKey) => {
+        if (ref.current && !ref.current.contains(event.target)) {
+            setDropdownStates((prev) => ({ ...prev, [dropdownKey]: false }))
+        }
+    }
+
+    // Effect to add and remove event listener for outside clicks
+    useEffect(() => {
+        const handleDocumentClick = (event) => {
+            handleClickOutside(event, assetRef, 'asset')
+            handleClickOutside(event, cityRef, 'city')
+            handleClickOutside(event, districtRef, 'district')
+            handleClickOutside(event, ownerRef, 'owner')
+            handleClickOutside(event, wltStatusRef, 'wltStatus')
+            handleClickOutside(event, landUseRef, 'landUse')
+            handleClickOutside(event, businessPlanRef, 'businessPlan')
+        }
+
+        document.addEventListener('mousedown', handleDocumentClick)
+        return () => {
+            document.removeEventListener('mousedown', handleDocumentClick)
+        }
+    }, [])
 
     return (
         <>
-            <div className="flex justify-between items-center px-12 2xl:px-24">
+            <div className="flex justify-between items-center px-12 2xl:px-24 4xl:px-32">
                 <h1
                     className={`text-primary-Main font-messiri font-bold text-[40px] leading-[48px] pt-4 ${
                         isViewer ? 'pb-5' : ''
@@ -308,11 +360,11 @@ const Analytics = () => {
                     </div>
                 )}
             </div>
-            <div className="bg-white mx-12 2xl:mx-24 mb-6 rounded-2xl shadow-card ">
-                <div className="grid 3xl:grid-cols-9 grid-cols-5 2xl:gap-5 gap-2 items-center px-8 py-6">
+            <div className="bg-white mx-12 2xl:mx-24 4xl:mx-32 mb-6 rounded-2xl shadow-card ">
+                <div className="flex gap-2 px-8 pt-6 pb-[21px]">
                     <div
                         className={`relative ${
-                            isApprover || isEditor ? '2xl:col-span-2' : ''
+                            isApprover || isEditor ? 'flex-[3]' : 'flex-1'
                         }`}
                     >
                         <input
@@ -331,86 +383,119 @@ const Analytics = () => {
                     </div>
 
                     {/* Asset Dropdown */}
-                    <SelectCustom
-                        label="Asset"
-                        isApprover={isApprover}
-                        isEditor={isEditor}
-                        placeholder="Asset"
-                        selectedItem={selectedFilters.asset || null}
-                        items={assets?.data?.map((item) => ({
-                            label: item.assetName,
-                            value: {
-                                id: item.id,
-                                assetName: item.assetName,
-                            },
-                        }))}
-                        onSelect={(item) => handleSelect('asset', item)}
-                        isOpen={dropdownStates.asset}
-                        toggleDropdown={() => toggleDropdown('asset')}
-                    />
+                    <div
+                        ref={assetRef}
+                        className={`relative ${
+                            isApprover || isEditor ? 'flex-[2]' : ''
+                        }`}
+                    >
+                        <SelectCustom
+                            label="Asset"
+                            isApprover={isApprover}
+                            isEditor={isEditor}
+                            placeholder="Asset"
+                            selectedItem={selectedFilters.asset || null}
+                            items={assets?.data?.map((item) => ({
+                                label: item.assetName,
+                                value: {
+                                    id: item.id,
+                                    assetName: item.assetName,
+                                },
+                            }))}
+                            onSelect={(item) => handleSelect('asset', item)}
+                            isOpen={dropdownStates.asset}
+                            toggleDropdown={() => toggleDropdown('asset')}
+                        />
+                    </div>
 
                     {/* City Dropdown */}
-                    <SelectCustom
-                        label="City"
-                        placeholder="City"
-                        selectedItem={selectedFilters.city || null}
-                        items={cities?.data.map((item) => ({
-                            label: item.cityName,
-                            value: {
-                                id: item.id,
-                                cityName: item.cityName,
-                            },
-                        }))}
-                        onSelect={(item) => handleSelect('city', item)}
-                        isOpen={dropdownStates.city}
-                        toggleDropdown={() => toggleDropdown('city')}
-                    />
-
+                    <div
+                        ref={cityRef}
+                        className={`relative ${
+                            isApprover || isEditor ? 'flex-[1]' : ''
+                        }`}
+                    >
+                        <SelectCustom
+                            label="City"
+                            placeholder="City"
+                            selectedItem={selectedFilters.city || null}
+                            items={cities?.data.map((item) => ({
+                                label: item.cityName,
+                                value: {
+                                    id: item.id,
+                                    cityName: item.cityName,
+                                },
+                            }))}
+                            onSelect={(item) => handleSelect('city', item)}
+                            isOpen={dropdownStates.city}
+                            toggleDropdown={() => toggleDropdown('city')}
+                            ref={cityRef}
+                        />
+                    </div>
                     {/* District Dropdown */}
-                    <SelectCustom
-                        label="District"
-                        placeholder="District"
-                        selectedItem={selectedFilters.district || null}
-                        items={districts?.data.map((item) => ({
-                            label: item.districtName,
-                            value: {
-                                id: item.id,
-                                districtName: item.districtName,
-                            },
-                        }))}
-                        onSelect={(item) => handleSelect('district', item)}
-                        isOpen={dropdownStates.district}
-                        toggleDropdown={() => toggleDropdown('district')}
-                    />
-
+                    <div
+                        ref={districtRef}
+                        className={`relative ${
+                            isApprover || isEditor ? 'flex-[1]' : ''
+                        }`}
+                    >
+                        <SelectCustom
+                            label="District"
+                            placeholder="District"
+                            selectedItem={selectedFilters.district || null}
+                            items={districts?.data.map((item) => ({
+                                label: item.districtName,
+                                value: {
+                                    id: item.id,
+                                    districtName: item.districtName,
+                                },
+                            }))}
+                            onSelect={(item) => handleSelect('district', item)}
+                            isOpen={dropdownStates.district}
+                            toggleDropdown={() => toggleDropdown('district')}
+                        />
+                    </div>
                     {/* Owner Dropdown */}
-                    <SelectCustom
-                        label="Owner"
-                        placeholder="Owner"
-                        selectedItem={selectedFilters.owner || null}
-                        items={ownerData?.data?.map((item) => ({
-                            label: item.status,
-                            value: item,
-                        }))}
-                        onSelect={(item) => handleSelect('owner', item)}
-                        isOpen={dropdownStates.owner}
-                        toggleDropdown={() => toggleDropdown('owner')}
-                    />
+                    <div
+                        ref={ownerRef}
+                        className={`relative ${
+                            isApprover || isEditor ? 'flex-[1]' : ''
+                        }`}
+                    >
+                        <SelectCustom
+                            label="Owner"
+                            placeholder="Owner"
+                            selectedItem={selectedFilters.owner || null}
+                            items={ownerData?.data?.map((item) => ({
+                                label: item.status,
+                                value: item,
+                            }))}
+                            onSelect={(item) => handleSelect('owner', item)}
+                            isOpen={dropdownStates.owner}
+                            toggleDropdown={() => toggleDropdown('owner')}
+                        />
+                    </div>
 
                     {/* WLT Status Dropdown */}
-                    <SelectCustom
-                        label="WLT Status"
-                        placeholder="WLT Status"
-                        selectedItem={selectedFilters.wltStatus || null}
-                        items={wltStatusData?.data?.map((item) => ({
-                            label: item.status,
-                            value: item,
-                        }))}
-                        onSelect={(item) => handleSelect('wltStatus', item)}
-                        isOpen={dropdownStates.wltStatus}
-                        toggleDropdown={() => toggleDropdown('wltStatus')}
-                    />
-
+                    <div
+                        ref={wltStatusRef}
+                        className={`relative ${
+                            isApprover || isEditor ? 'flex-[1]' : ''
+                        }`}
+                    >
+                        <SelectCustom
+                            label="WLT Status"
+                            placeholder="WLT Status"
+                            selectedItem={selectedFilters.wltStatus || null}
+                            items={wltStatusData?.data?.map((item) => ({
+                                label: item.status,
+                                value: item,
+                            }))}
+                            onSelect={(item) => handleSelect('wltStatus', item)}
+                            isOpen={dropdownStates.wltStatus}
+                            toggleDropdown={() => toggleDropdown('wltStatus')}
+                        />
+                    </div>
                     {/* Land Use Dropdown */}
                     {/* <SelectCustom
                         label="Land Use"
@@ -425,35 +510,41 @@ const Analytics = () => {
                         toggleDropdown={() => toggleDropdown('landUse')}
                     /> */}
                     {isApprover || isEditor ? null : (
-                        <NestedSelect
-                            label="Land Use"
-                            items={landData?.data}
-                            selectedItem={selectedLandUse}
-                            onSelect={handleLandUseSelect}
-                            isOpen={isLandUseDropdownOpen}
-                            toggleDropdown={toggleLandUseDropdown}
-                            placeholder="Land Use"
-                        />
+                        <div ref={landUseRef}>
+                            <NestedSelect
+                                label="Land Use"
+                                items={landData?.data}
+                                selectedItem={selectedLandUse}
+                                onSelect={handleLandUseSelect}
+                                isOpen={isLandUseDropdownOpen}
+                                toggleDropdown={toggleLandUseDropdown}
+                                placeholder="Land Use"
+                            />
+                        </div>
                     )}
 
                     {/* Business Plan Dropdown */}
                     {isApprover || isEditor ? null : (
-                        <SelectCustom
-                            label="Business Plan"
-                            placeholder="Business Plan"
-                            selectedItem={selectedFilters.businessPlan || null}
-                            items={planData?.data?.map((item) => ({
-                                label: item.status,
-                                value: item,
-                            }))}
-                            onSelect={(item) =>
-                                handleSelect('businessPlan', item)
-                            }
-                            isOpen={dropdownStates.businessPlan}
-                            toggleDropdown={() =>
-                                toggleDropdown('businessPlan')
-                            }
-                        />
+                        <div ref={businessPlanRef}>
+                            <SelectCustom
+                                label="Business Plan"
+                                placeholder="Business Plan"
+                                selectedItem={
+                                    selectedFilters.businessPlan || null
+                                }
+                                items={planData?.data?.map((item) => ({
+                                    label: item.status,
+                                    value: item,
+                                }))}
+                                onSelect={(item) =>
+                                    handleSelect('businessPlan', item)
+                                }
+                                isOpen={dropdownStates.businessPlan}
+                                toggleDropdown={() =>
+                                    toggleDropdown('businessPlan')
+                                }
+                            />
+                        </div>
                     )}
 
                     {/* Sort By Dropdown */}
@@ -476,7 +567,7 @@ const Analytics = () => {
                     className={` gap-[10px] px-8 ${
                         Object.values(selectedFilters).some((value) => value) ||
                         selectedLandUse
-                            ? 'border-t  py-6 '
+                            ? 'border-t py-6 '
                             : ''
                     } flex flex-wrap border-primary-200`}
                 >
@@ -660,7 +751,7 @@ const Analytics = () => {
                 </div>
             </div>
 
-            <div className="px-12 2xl:px-24">
+            <div className="px-12 2xl:px-24 4xl:px-32">
                 {isLoading ? (
                     <Loader />
                 ) : isError ? (

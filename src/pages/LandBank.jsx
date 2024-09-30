@@ -23,13 +23,15 @@ const LandBank = () => {
     const [selectedSort, setSelectedSort] = useState('latest')
     const sortRef = useRef(null)
     const navigate = useNavigate()
+    const token = localStorage.getItem('token')
 
     const sorts = [
         { value: 'latest', label: 'Latest Update' },
         { value: 'oldest', label: 'Oldest Update' },
     ]
     const { data, isLoading, isError } = useFetchData(
-        `${baseURL}Asset/GetAssets`
+        `${baseURL}Asset/GetAssets`,
+        token
     )
     console.log(data)
     const windowWidth = useWindowWidth()
@@ -38,9 +40,9 @@ const LandBank = () => {
     if (windowWidth >= 2560) {
         sliceSize = 10
     } else if (windowWidth >= 1650) {
-        sliceSize = 10
+        sliceSize = 8
     } else if (windowWidth >= 1500) {
-        sliceSize = 10
+        sliceSize = 8
     } else if (windowWidth >= 1190) {
         sliceSize = 8
     } else if (windowWidth >= 768) {
@@ -110,7 +112,7 @@ const LandBank = () => {
 
     return (
         <>
-            <section className="section1 px-12 2xl:px-24">
+            <section className="section1 px-12 4xl:px-32 2xl:px-24">
                 <div className="flex justify-between">
                     <h1 className="text-[40px] leading-[48px] font-bold font-messiri text-primary-Main my-8">
                         AWJ Land Bank Hub
@@ -161,7 +163,7 @@ const LandBank = () => {
     sm:grid-cols-2
     md:grid-cols-2
     lg:grid-cols-4
-    3xl:grid-cols-5
+    3xl:grid-cols-4
     gap-4 2xl:gap-6 mt-1"
                 >
                     {isLoading ? (
@@ -219,7 +221,7 @@ const LandBank = () => {
                     className="absolute w-full h-full object-cover right-[25%]"
                 />
 
-                <section className="section2 px-12 2xl:px-24 py-14">
+                <section className="section2 px-12 2xl:px-24 4xl:px-32 py-14">
                     {/* Centered Heading and Paragraph */}
                     <div className="text-center p-4 rounded-lg">
                         <h1 className="font-bold text-[40px] leading-[48px] font-messiri text-primary-Main">
@@ -314,7 +316,7 @@ const LandBank = () => {
                 </section>
             </div>
 
-            <section className="bg-white px-12 2xl:px-24 py-6 ">
+            <section className="bg-white px-12 2xl:px-24 4xl:px-32 py-6 ">
                 <div className="flex justify-between mt-16">
                     <h1 className="text-[40px] font-bold font-messiri text-primary-Main text-center">
                         AWJ Land Bank Hub Reports

@@ -20,9 +20,13 @@ const ApproverAnalytics = lazy(() =>
 )
 const LandInfoUpdate = lazy(() => import('../pages/Approver/LandInfoUpdate'))
 
-const Login = lazy(() => import('../login/Login'))
-
+const Login = lazy(() => import('../pages/login/Login'))
+const LandAdmin = lazy(() => import('../pages/Admin/LandAdmin'))
 import MainLand from '../pages/AddLand/MainLand'
+import AfterLogoutScreen from '../pages/logout/AfterLogoutScreen'
+const UserManagement = lazy(() =>
+    import('../pages/UserManagement/UserManagement')
+)
 export const routesList = [
     {
         path: '/',
@@ -32,6 +36,14 @@ export const routesList = [
                 element: (
                     <Suspense fallback={<Loader />}>
                         <Landbank />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'user-management',
+                element: (
+                    <Suspense fallback={<Loader />}>
+                        <UserManagement />
                     </Suspense>
                 ),
             },
@@ -120,6 +132,22 @@ export const routesList = [
                 element: (
                     <Suspense fallback={<Loader />}>
                         <LandInfoUpdate />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'landadmin',
+                element: (
+                    <Suspense fallback={<Loader />}>
+                        <LandAdmin />
+                    </Suspense>
+                ),
+            },
+            {
+                path: 'logout',
+                element: (
+                    <Suspense fallback={<Loader />}>
+                        <AfterLogoutScreen />
                     </Suspense>
                 ),
             },

@@ -20,6 +20,8 @@ const AssetDetails = () => {
     const dispatch = useDispatch()
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
+    const token = localStorage.getItem('token')
+    const [openDropdown, setOpenDropdown] = useState(null)
     const { isEditable, activeTab, landAssetInfo } = useSelector((state) => ({
         isEditable: state?.forms?.isEditable,
         activeTab: state?.forms?.activeTab,
@@ -61,11 +63,13 @@ const AssetDetails = () => {
         isEditable
     )
     const { data: citiesData, isLoading: isLoadingCities } = useFetchData(
-        `${baseURL}Asset/GetAllCities`
+        `${baseURL}Asset/GetAllCities`,
+        token
     )
 
     const { data: districtsData, isLoading: isLoadingDistricts } = useFetchData(
-        `${baseURL}Asset/GetDistrictsByCityId?cityId=${cityID}`
+        `${baseURL}Asset/GetDistrictsByCityId?cityId=${cityID}`,
+        token
     )
 
     const subAssetsOptions = isEditable
@@ -197,6 +201,8 @@ const AssetDetails = () => {
                             onChange={handleInputChange}
                             label="subAssetName"
                             options={subAssetsOptions}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     </div>
                     <div className="flex gap-3   flex-wrap ">
@@ -225,6 +231,8 @@ const AssetDetails = () => {
                                 onChange={handleInputChange}
                                 label="City"
                                 options={cityOptions}
+                                openDropdown={openDropdown}
+                                setOpenDropdown={setOpenDropdown}
                             />
                         </div>
                         <div className="flex flex-col">
@@ -238,6 +246,8 @@ const AssetDetails = () => {
                                 onChange={handleInputChange}
                                 label="District"
                                 options={districtOptions}
+                                openDropdown={openDropdown}
+                                setOpenDropdown={setOpenDropdown}
                             />
                         </div>
                         <div className="flex flex-col  gap-3">

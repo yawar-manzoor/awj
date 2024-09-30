@@ -20,6 +20,7 @@ const CardsAll = () => {
     const location = useLocation()
     const { data } = location?.state || {}
     console.log(data)
+    const token = localStorage.getItem('token')
 
     // -----SORT------
     const [isSortOpen, setIsSortOpen] = useState(false)
@@ -54,10 +55,11 @@ const CardsAll = () => {
     const cityRef = useRef(null)
     const districtRef = useRef(null)
 
-    const { data: asset } = useFetchData(`${baseURL}Asset/GetAllAssets`)
-    const { data: city } = useFetchData(`${baseURL}Asset/GetAllCities`)
+    const { data: asset } = useFetchData(`${baseURL}Asset/GetAllAssets`, token)
+    const { data: city } = useFetchData(`${baseURL}Asset/GetAllCities`, token)
     const { data: district } = useFetchData(
-        `${baseURL}Asset/GetDistrictsByCityId?cityId=${selectedCity?.id}`
+        `${baseURL}Asset/GetDistrictsByCityId?cityId=${selectedCity?.id}`,
+        token
     )
     console.log(asset)
 
@@ -86,7 +88,11 @@ const CardsAll = () => {
         }
 
         try {
-            const res = await axios.get(url)
+            const res = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
             const fetchedAssets = res.data.data || []
 
             setAssets(fetchedAssets)
@@ -117,6 +123,30 @@ const CardsAll = () => {
         currentPage,
         itemsPerPage,
     ])
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (
+                assetRef.current &&
+                !assetRef.current.contains(event.target) &&
+                cityRef.current &&
+                !cityRef.current.contains(event.target) &&
+                districtRef.current &&
+                !districtRef.current.contains(event.target)
+            ) {
+                setIsAssetOpen(false)
+                setIsCityOpen(false)
+                setIsDistrictOpen(false)
+
+                // Call handleFilteredAssets when closing the dropdowns
+                handleFilteredAssets()
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [assetRef, cityRef, districtRef, handleFilteredAssets]) // Ensure handleFilteredAssets is added as a dependency
 
     // const sorts = [
     //     { value: 'latest', label: 'Latest Update' },
@@ -137,10 +167,27 @@ const CardsAll = () => {
         setSelectedDistrict(value)
         setIsDistrictOpen(false)
     }
+    const handleAssetDropdown = () => {
+        setIsAssetOpen((prev) => !prev)
+        setIsCityOpen(false)
+        setIsDistrictOpen(false)
+    }
+
+    const handleCityDropdown = () => {
+        setIsCityOpen((prev) => !prev)
+        setIsAssetOpen(false)
+        setIsDistrictOpen(false)
+    }
+
+    const handleDistrictDropdown = () => {
+        setIsDistrictOpen((prev) => !prev)
+        setIsAssetOpen(false)
+        setIsCityOpen(false)
+    }
 
     return (
         <>
-            <section className="section1 mb-3  px-12 2xl:px-24">
+            <section className="section1 mb-3  px-12 2xl:px-24 4xl:px-32">
                 <div className="flex justify-between">
                     <h1 className="text-[40px] leading-[48px] font-bold font-messiri text-primary-Main my-8">
                         AWJ Land Bank Hub
@@ -195,7 +242,7 @@ const CardsAll = () => {
                             value={query}
                             placeholder="Search Keywords"
                             onChange={handleSearch}
-                            className="p-3 rounded-lg border border-primary-input text-primary-Main bg-white text-sm flex-grow focus:outline-none"
+                            className="px-4 py-3 rounded-lg border border-primary-input text-primary-Main bg-white text-sm flex-grow focus:outline-none"
                         />
                         <img
                             src={SearchIcon}
@@ -205,10 +252,10 @@ const CardsAll = () => {
                     </div>
 
                     {/* --------------------- ASSET ------------------------------ */}
-                    <div className="relative col-span-3 w-full">
+                    <div className="relative col-span-3 w-full" ref={assetRef}>
                         <button
-                            onClick={() => setIsAssetOpen(!isAssetOpen)}
-                            className="w-full flex items-center justify-between p-3 text-primary-Main rounded-lg border border-primary-input bg-white text-sm text-left"
+                            onClick={handleAssetDropdown}
+                            className="w-full flex items-center justify-between px-4 py-3 text-primary-Main rounded-lg border border-primary-input bg-white text-sm text-left"
                             aria-expanded={isAssetOpen}
                         >
                             {selectedAsset?.assetName || 'Asset'}
@@ -227,7 +274,6 @@ const CardsAll = () => {
                                         ? 'h-52 overflow-y-auto'
                                         : 'h-auto'
                                 }`}
-                                ref={assetRef}
                             >
                                 {asset?.data?.length > 0 ? (
                                     asset.data.map((asset) => (
@@ -252,10 +298,10 @@ const CardsAll = () => {
                     </div>
 
                     {/* --------------------- CITY ------------------------------ */}
-                    <div className="relative col-span-2 w-full">
+                    <div className="relative col-span-2 w-full" ref={cityRef}>
                         <button
-                            onClick={() => setIsCityOpen(!isCityOpen)}
-                            className="w-full flex items-center justify-between p-3 rounded-lg text-primary-Main border border-primary-input bg-white text-sm text-left"
+                            onClick={handleCityDropdown}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-primary-Main border border-primary-input bg-white text-sm text-left"
                             aria-expanded={isCityOpen}
                         >
                             {selectedCity?.cityName || 'City'}
@@ -274,7 +320,6 @@ const CardsAll = () => {
                                         ? 'h-52 overflow-y-auto'
                                         : 'h-auto'
                                 }`}
-                                ref={cityRef}
                                 role="listbox"
                             >
                                 {city?.data?.length > 0 ? (
@@ -300,10 +345,13 @@ const CardsAll = () => {
                     </div>
 
                     {/* --------------------- DISTRICT ------------------------------ */}
-                    <div className="relative col-span-2 w-full ">
+                    <div
+                        className="relative col-span-2 w-full "
+                        ref={districtRef}
+                    >
                         <button
-                            onClick={() => setIsDistrictOpen(!isDistrictOpen)}
-                            className="w-full flex items-center justify-between p-3 rounded-lg border text-primary-Main border-primary-input bg-white text-sm text-left"
+                            onClick={handleDistrictDropdown}
+                            className="w-full flex items-center justify-between px-4 py-3 rounded-lg border text-primary-Main border-primary-input bg-white text-sm text-left"
                         >
                             {selectedDistrict?.districtName || 'District'}
                             <img
@@ -321,7 +369,6 @@ const CardsAll = () => {
                                         ? 'h-52 overflow-y-auto'
                                         : 'h-auto'
                                 }`}
-                                ref={districtRef}
                             >
                                 {district?.data?.length > 0 ? (
                                     district.data.map((district) => (
@@ -349,7 +396,7 @@ const CardsAll = () => {
                     className="grid grid-cols-1
     sm:grid-cols-2
     md:grid-cols-4
-    3xl:grid-cols-5
+    3xl:grid-cols-4
     gap-4 2xl:gap-6 mt-6"
                 >
                     {assets?.length > 0 ? (

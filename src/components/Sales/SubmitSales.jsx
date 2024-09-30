@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { baseURL } from '../../lib/global'
 import {
     setEditable,
@@ -9,25 +9,34 @@ import {
 import Button from '../ui/Button'
 
 const SubmitSales = ({ refetch }) => {
+    const roleName = localStorage.getItem('roleName')
     const dispatch = useDispatch()
+    const navigate = useNavigate()
+
     const location = useLocation()
     const landId = location.state?.landId || null
     const salesDetail = useSelector((state) => state.forms?.salesData)
     const salesDetailed =
         useSelector((state) => state.forms?.LandAssetInfo?.saleDetails) || {}
     const AssetInfo = useSelector((state) => state.forms?.LandAssetInfo) || {}
-    console.log({ AssetInfo })
+    const actionAssetId =
+        useSelector((state) => state.forms.LandAssetInfo.assetId) || {}
+
     const [error, setError] = useState(null)
     const [Emailerror, setEmailerror] = useState('')
     const handleApiError = (error, message) => {
-        setError(message)
+        setError('Failed to submit')
     }
+    const token = localStorage.getItem('token')
 
     const submitAction = async () => {
         try {
             const response = await fetch(`${baseURL}Land/LandUpdateAction`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify({ landId, action: 3 }),
             })
 
@@ -39,20 +48,28 @@ const SubmitSales = ({ refetch }) => {
                     errorData.responseException.exceptionMessage
                 )
             }
+
+            if (roleName === 'Approver') {
+                navigate('/approver-analytics', { state: { actionAssetId } })
+            } else if (roleName === 'Editor') {
+                navigate('/analytics', { state: { actionAssetId } })
+            } else {
+                navigate('/landbank')
+            }
         } catch (error) {
-            handleApiError(error, errorData.responseException.exceptionMessage)
+            handleApiError(error, error?.responseException?.exceptionMessage)
             throw error
         } finally {
             dispatch(setEditable(false))
         }
     }
+
     const handleSubmitSales = async () => {
         const Selectedbuyerid = localStorage.getItem('buyerId')
         const email = salesDetail?.buyerEmail
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
         if (email && !emailPattern.test(email)) {
-            console.error('Invalid email format')
             setEmailerror('Please enter a valid email address.')
             return
         }
@@ -64,27 +81,27 @@ const SubmitSales = ({ refetch }) => {
             commission: salesDetailed.commission
                 ? +salesDetailed.commission
                 : null,
-            saleValue: salesDetailed.salesValue
-                ? +salesDetailed.salesValue
-                : null,
+            saleValue: salesDetail.salesValue ? +salesDetail.salesValue : null,
             saleDate: null,
             salesRepresentative: null,
-            agentName: salesDetail.agentName,
+            agentName: salesDetail.agentNameId ?? null,
             buyerId: Selectedbuyerid ? +Selectedbuyerid : null,
-            paymentAmount: salesDetailed.paymentAmount
-                ? +salesDetailed.paymentAmount
+            paymentAmount: salesDetail.paymentAmount
+                ? +salesDetail.paymentAmount
                 : null,
-            discount: salesDetailed.discount ? +salesDetailed.discount : null,
-            vatAmount: salesDetailed.vat ? +salesDetailed.vat : null,
-            paymentTerm: salesDetailed.paymentTerm ?? null,
+            discount: salesDetail.discount ? +salesDetail.discount : null,
+            vatAmount: salesDetail.vat ? +salesDetail.vat : null,
+            paymentTerm: salesDetail.paymentTerm ?? null,
             paymentStatus: salesDetail.paymentStatus,
             depositStatus: salesDetail.depositStatus,
             collectedStatus: salesDetail.collectedStatus,
-            paymentDate: salesDetailed.paymentDate ?? null,
-            buyerIdField: salesDetailed.buyerId ? salesDetailed.buyerId : null,
+            paymentDate: salesDetail.paymentDate
+                ? salesDetail.paymentDate
+                : null,
+            buyerIdField: salesDetail.buyerId ? salesDetail.buyerId : null,
             buyerName: salesDetail.buyerName ?? null,
-            email: salesDetail.buyerEmail ?? null,
-            mobile: salesDetail.buyerMobile ?? null,
+            buyerEmail: salesDetail.email ?? null,
+            buyerMobile: salesDetail.mobile ?? null,
             companyId: salesDetail.companyId ?? null,
             reetNumber: salesDetail.reetNumber,
             reetDate: salesDetail.reetDate,
@@ -98,7 +115,10 @@ const SubmitSales = ({ refetch }) => {
         try {
             const response = await fetch(`${baseURL}Sales/UpsertSale`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify(payload),
             })
             if (response.ok) {
@@ -109,18 +129,14 @@ const SubmitSales = ({ refetch }) => {
             }
             if (!response.ok) {
                 const errorData = await response.json()
-                handleApiError(
-                    error,
-                    errorData.responseException.exceptionMessage
-                )
+                handleApiError(error, '')
                 const data = await refetch()
                 dispatch(setInitialLandAssetInfo(data?.data?.data))
                 dispatch(setEditable(false))
             }
         } catch (error) {
             const errorData = await response.json()
-            console.log(errorData.responseException.exceptionMessage)
-            handleApiError(error, errorData.responseException.exceptionMessage)
+            handleApiError(error, '')
         } finally {
             const data = await refetch()
             dispatch(setInitialLandAssetInfo(data?.data?.data))

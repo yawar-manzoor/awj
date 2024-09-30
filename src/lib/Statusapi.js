@@ -1,17 +1,12 @@
 import useFetchData from './FetchData'
 import { baseURL } from './global'
 
-// export const getStatus = (statusType) => {
-//     const { data, isLoading, error, isError } = useFetchData(
-//         `${baseURL}Asset/GetStatus?statusType=${statusType}`
-//     )
-//     return { data, isLoading, error, isError }
-// }
+const token = localStorage.getItem('token')
 export const useStatusData = (statusType, shouldFetch) => {
     const url = shouldFetch
         ? `${baseURL}Asset/GetStatus?statusType=${statusType}`
         : null
-    const { data, isLoading, error, isError } = useFetchData(url)
+    const { data, isLoading, error, isError } = useFetchData(url, token)
 
     return { data, isLoading, error, isError }
 }

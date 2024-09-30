@@ -17,6 +17,7 @@ import { useStatusData } from '../../lib/Statusapi'
 import { generateOptions } from '../../lib/options'
 import { baseURL } from '../../lib/global'
 import { useState } from 'react'
+import FileUpload from './FileUpload'
 
 const PaymentCard = () => {
     const department = localStorage.getItem('department')
@@ -28,6 +29,7 @@ const PaymentCard = () => {
     const AssetInfo = useSelector((state) => state.forms?.LandAssetInfo) || {}
     const [fileError, setFileError] = useState('')
     const [Attachment, setAttachments] = useState()
+    const [openDropdown, setOpenDropdown] = useState(null)
     const LandId = AssetInfo.landId
     const TitleDeedId = AssetInfo.titleDeed.titleDeedId
 
@@ -61,6 +63,7 @@ const PaymentCard = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
+        console.log({ name, value }, 'in payment')
         if (name === 'collectedStatus') {
             const selectedstatus = CollectedStatus.data.find(
                 (item) => item.status === value
@@ -73,6 +76,8 @@ const PaymentCard = () => {
             )
             dispatch(updateSalesData({ depositStatus: selectedstatus.id }))
         }
+        dispatch(updateSalesData({ [name]: value }))
+
         dispatch(
             updateLandAssetInfo({
                 saleDetails: {
@@ -85,6 +90,8 @@ const PaymentCard = () => {
 
     const handleDateChange = (e) => {
         const { value } = e.target
+        dispatch(updateSalesData({ paymentDate: value }))
+
         dispatch(
             updateLandAssetInfo({
                 saleDetails: {
@@ -259,6 +266,8 @@ const PaymentCard = () => {
                             value={payment?.collectedStatus || ''}
                             onChange={handleInputChange}
                             options={CollectedStatusOptions}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <span className="font-semibold text-lg text-primary-600">
@@ -278,6 +287,8 @@ const PaymentCard = () => {
                             value={payment?.depositStatus || ''}
                             onChange={handleInputChange}
                             options={DepositStatusOptions}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <span className="font-semibold text-lg text-primary-600">
@@ -315,26 +326,12 @@ const PaymentCard = () => {
             isRoleEditorApprover(roleName) &&
             isStatusDataNotSubmittedOrSentBack(AssetInfo.status) ? (
                 <>
-                    <div className="flex items-center">
-                        <input
-                            type="file"
-                            id="fileUpload"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                        />
-
-                        <label
-                            htmlFor="fileUpload"
-                            className="cursor-pointer h-fit border-dashed whitespace-nowrap bg-[#EFECE4]/50 border flex items-center border-primary-400 px-7 py-2 rounded-xl font-bold text-sm text-primary-Main"
-                        >
-                            <img
-                                src={downloadIcon}
-                                alt="upload"
-                                className="mr-2 rotate-180"
-                            />
-                            Add Attachment
-                        </label>
-                    </div>
+                    <FileUpload
+                        handleFileUpload={handleFileUpload}
+                        downloadIcon={downloadIcon}
+                        // attachment={attachment}
+                        fileError={fileError}
+                    />
                     {/* {fileError && (
                         <div className="text-red-500 text-sm">{fileError}</div>
                     )} */}

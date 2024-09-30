@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import HomeIcon from '../assets/HomeIcon.svg'
+import HomeIcon from '../assets/SideNavBar/HomeIcon.svg'
 import FourSquare from '../assets/SideNavBar/FourSquare.svg'
 import GraphIcon from '../assets/SideNavBar/graph.svg'
 import PaperIcon from '../assets/SideNavBar/paper.svg'
@@ -11,6 +11,7 @@ import { Link, useLocation } from 'react-router-dom'
 const NavBar = ({ navbarVisible, toggleNavbar }) => {
     const navRef = useRef(null)
     const location = useLocation()
+    const roleName = localStorage.getItem('roleName')
 
     useEffect(() => {
         const handleOutsideClick = (event) => {
@@ -51,75 +52,87 @@ const NavBar = ({ navbarVisible, toggleNavbar }) => {
                 <div className="p-6 overflow-y-auto global-scroll max-h-screen">
                     <ul className="">
                         <Link
-                            to="landbank"
-                            className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                            to={
+                                roleName === 'Admin'
+                                    ? '/landadmin'
+                                    : '/landbank'
+                            }
+                            className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                             onClick={toggleNavbar}
                         >
-                            <div className="rounded-full bg-primary-200 p-1">
+                            <div className="rounded-full bg-primary-200 p-2">
                                 <img src={HomeIcon} alt="err" />
                             </div>
                             <span>Home</span>
                         </Link>
+                        <div className="text-primary-400 mt-3">Land Bank</div>
 
-                        <div className="text-primary-400 mt-4">Land Bank</div>
-                        <Link
-                            to="/add-split-dashboard"
-                            className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
-                            onClick={toggleNavbar}
-                        >
-                            <div className="rounded-full bg-primary-200 p-2">
-                                <img src={FourSquare} alt="err" />
-                            </div>
-                            <span>Add / Modify Land</span>
-                        </Link>
-                        <Link
-                            to=""
-                            className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
-                            onClick={toggleNavbar}
-                        >
-                            <div className="rounded-full bg-primary-200 p-2">
-                                <img src={FourSquare} alt="err" />
-                            </div>
-                            <span>Land Ownership Update</span>
-                        </Link>
-                        <Link
-                            to=""
-                            className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
-                            onClick={toggleNavbar}
-                        >
-                            <div className="rounded-full bg-primary-200 p-2">
-                                <img src={GraphIcon} alt="err" />
-                            </div>
-                            <span>Land Info Update</span>
-                        </Link>
-                        <Link
-                            to=""
-                            className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
-                            onClick={toggleNavbar}
-                        >
-                            <div className="rounded-full bg-primary-200 p-2">
-                                <img src={GraphIcon} alt="err" />
-                            </div>
-                            <span>Land WLT Update</span>
-                        </Link>
-                        <Link
-                            to=""
-                            className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
-                            onClick={toggleNavbar}
-                        >
-                            <div className="rounded-full bg-primary-200 p-2">
-                                <img src={PaperIcon} alt="err" />
-                            </div>
-                            <span>Land REETT Update</span>
-                        </Link>
-
-                        <div className="border-t-2 border-primary-400 mt-6">
-                            <div className="text-primary-400 mt-4 mb-3">
+                        {roleName !== 'Admin' && (
+                            <>
+                                <Link
+                                    to="/add-split-dashboard"
+                                    className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                    onClick={toggleNavbar}
+                                >
+                                    <div className="rounded-full bg-primary-200 p-2">
+                                        <img src={FourSquare} alt="err" />
+                                    </div>
+                                    <span>Add / Modify Land</span>
+                                </Link>
+                                <Link
+                                    to=""
+                                    className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                    onClick={toggleNavbar}
+                                >
+                                    <div className="rounded-full bg-primary-200 p-2">
+                                        <img src={FourSquare} alt="err" />
+                                    </div>
+                                    <span>Land Ownership Update</span>
+                                </Link>
+                                <Link
+                                    to=""
+                                    className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                    onClick={toggleNavbar}
+                                >
+                                    <div className="rounded-full bg-primary-200 p-2">
+                                        <img src={GraphIcon} alt="err" />
+                                    </div>
+                                    <span>Land Info Update</span>
+                                </Link>
+                                <Link
+                                    to=""
+                                    className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                    onClick={toggleNavbar}
+                                >
+                                    <div className="rounded-full bg-primary-200 p-2">
+                                        <img src={GraphIcon} alt="err" />
+                                    </div>
+                                    <span>Land WLT Update</span>
+                                </Link>
+                            </>
+                        )}
+                        {roleName === 'Admin' && (
+                            <>
+                                <Link
+                                    to="/landbank
+                                    "
+                                    className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                    onClick={toggleNavbar}
+                                >
+                                    <div className="rounded-full bg-primary-200 p-2">
+                                        <img src={FourSquare} alt="err" />
+                                    </div>
+                                    <span>Data Mangement</span>
+                                </Link>
+                            </>
+                        )}
+                        <div className="border-t border-primary-400 mt-6">
+                            <div className="text-primary-400 mt-5 mb-3">
                                 Sales
                             </div>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
                                 <div className="rounded-full bg-primary-200 p-2">
@@ -127,14 +140,49 @@ const NavBar = ({ navbarVisible, toggleNavbar }) => {
                                 </div>
                                 <span>Land Sale Request</span>
                             </Link>
+                            <Link
+                                to=""
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                onClick={toggleNavbar}
+                            >
+                                <div className="rounded-full bg-primary-200 p-2">
+                                    <img src={PaperIcon} alt="err" />
+                                </div>
+                                <span>Land RETT Request</span>
+                            </Link>
                         </div>
-                        <div className="border-t-2 border-primary-400 mt-6">
-                            <div className="text-primary-400 mt-4 mb-3">
+                        <div className="border-t border-primary-400 mt-6">
+                            <div className="text-primary-400 mt-5 mb-3">
+                                Investment Team
+                            </div>
+                            <Link
+                                to=""
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                onClick={toggleNavbar}
+                            >
+                                <div className="rounded-full bg-primary-200 p-2">
+                                    <img src={BinIcon} alt="err" />
+                                </div>
+                                <span>Land Status Update</span>
+                            </Link>
+                            <Link
+                                to=""
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                onClick={toggleNavbar}
+                            >
+                                <div className="rounded-full bg-primary-200 p-2">
+                                    <img src={PaperIcon} alt="err" />
+                                </div>
+                                <span>Land Business Plan Update</span>
+                            </Link>
+                        </div>
+                        <div className="border-t border-primary-400 mt-6">
+                            <div className="text-primary-400 mt-5 mb-3">
                                 Finance / Land Bank
                             </div>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
                                 <div className="rounded-full bg-primary-200 p-2">
@@ -144,7 +192,7 @@ const NavBar = ({ navbarVisible, toggleNavbar }) => {
                             </Link>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
                                 <div className="rounded-full bg-primary-200 p-2">
@@ -154,7 +202,7 @@ const NavBar = ({ navbarVisible, toggleNavbar }) => {
                             </Link>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
                                 <div className="rounded-full bg-primary-200 p-2">
@@ -164,20 +212,21 @@ const NavBar = ({ navbarVisible, toggleNavbar }) => {
                             </Link>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
-                                <div className="rounded-full bg-primary-200 p-2">
-                                    <img src={GraphIcon} alt="err" />
+                                <div className="rounded-full w-[42px]  bg-primary-200 p-2">
+                                    <img
+                                        className="w-full h-full"
+                                        src={GraphIcon}
+                                        alt="err"
+                                    />
                                 </div>
-                                <span>
-                                    {' '}
-                                    Land Transactional Valuation Update
-                                </span>
+                                <span>Land Transactional Valuation Update</span>
                             </Link>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
                                 <div className="rounded-full bg-primary-200 p-2">
@@ -186,13 +235,13 @@ const NavBar = ({ navbarVisible, toggleNavbar }) => {
                                 <span>Land ZAKAT Request</span>
                             </Link>
                         </div>
-                        <div className="border-t-2 border-primary-400 mt-8 mb-40">
-                            <div className="text-primary-400 mt-16 mb-3">
+                        <div className="border-t border-primary-400 mt-6 mb-36">
+                            <div className="text-primary-400 mt-5 mb-3">
                                 Application Support
                             </div>
                             <Link
                                 to=""
-                                className="flex p-3 space-x-2 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
+                                className="flex p-2 space-x-3 items-center mt-2 rounded-lg text-primary-Main text-base font-normal bg-primary-100 cursor-pointer"
                                 onClick={toggleNavbar}
                             >
                                 <div className="rounded-full bg-primary-200 p-2">

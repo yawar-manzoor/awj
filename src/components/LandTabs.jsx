@@ -12,7 +12,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { baseURL } from '../lib/global'
 import { formatForAPI } from '../components/SubmitWltData'
-
 import {
     setActiveTab,
     setEditable,
@@ -26,6 +25,7 @@ const Tabs = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const location = useLocation()
+    const token = localStorage.getItem('token')
     const { landId } = location?.state || {}
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
@@ -44,15 +44,16 @@ const Tabs = () => {
         activeTab,
         LandOverView,
         performRefetch,
+        actionAssetId,
     } = useSelector((state) => ({
         landassetinfo: state.forms.LandAssetInfo,
         activeTab: state.forms.activeTab,
         isEditable: state.forms.isEditable,
         LandOverView: state.forms.LandOverView,
         performRefetch: state.forms.refetch,
+        actionAssetId: state.forms.LandAssetInfo.assetId,
     }))
-    console.log(landassetinfo, 'landassetinfo in land tabs')
-
+    console.log('ppppppppppppp', landassetinfo)
     const timelineContainerRef = useRef()
     const timelineContainerPadding = 40
     const isWlt = landassetinfo?.isWlt
@@ -67,7 +68,7 @@ const Tabs = () => {
         roleName === 'Viewer'
             ? `${baseURL}Land/GetLandDetailsForViewer?landId=${landId}&deptt=${activeTab}`
             : `${baseURL}Land/GetLandDetails?landId=${landId}&deptt=${activeTab}`
-    const { data, error, isError, refetch } = useFetchData(apiUrl)
+    const { data, error, isError, refetch } = useFetchData(apiUrl, token)
 
     useEffect(() => {
         dispatch(setActiveTab('landoverview'))
@@ -204,7 +205,7 @@ const Tabs = () => {
                 )
 
             case 'wlt':
-                return <>{isLoading ? <Loader /> : <WLT />}</>
+                return <>{isLoading ? <Loader /> : <WLT refetch={refetch} />}</>
             case 'finance':
                 return (
                     <>
@@ -260,13 +261,29 @@ const Tabs = () => {
 
     const updateLandAction = async (landId, action) => {
         try {
-            const response = await axios.post('Land/LandUpdateAction', {
-                landId: landId,
-                action: action,
-                comments: comments,
-            })
+            const response = await axios.post(
+                'Land/LandUpdateAction',
+                {
+                    landId: landId,
+                    action: action,
+                    comments: comments,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
             console.log('API Response:', response.data)
-            navigate('/landbank')
+
+            if (roleName === 'Approver') {
+                navigate('/approver-analytics', { state: { actionAssetId } })
+            } else if (roleName === 'Editor') {
+                navigate('/analytics', { state: { actionAssetId } })
+            } else {
+                navigate('/landbank')
+            }
         } catch (error) {
             console.error('API Error:', error)
         }
@@ -314,6 +331,7 @@ const Tabs = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             })
@@ -333,12 +351,27 @@ const Tabs = () => {
     // faisal overview code //
     const handleSubmit = async () => {
         try {
-            const response = await axios.post('Land/LandUpdateAction', {
-                landId: landId,
-                action: 3,
-            })
+            const response = await axios.post(
+                'Land/LandUpdateAction',
+                {
+                    landId: landId,
+                    action: 3,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
+
             console.log('API Response:', response.data)
-            navigate('/landbank')
+            if (roleName === 'Approver') {
+                navigate('/approver-analytics', { state: { actionAssetId } })
+            } else if (roleName === 'Editor') {
+                navigate('/analytics', { state: { actionAssetId } })
+            } else {
+                navigate('/landbank')
+            }
             dispatch(setEditable(false))
         } catch (error) {
             console.error('API Error:', error)
@@ -349,26 +382,33 @@ const Tabs = () => {
         try {
             const formattedData = await formatForAPI(
                 whiteLandDetails,
-                landassetinfo
+                landassetinfo,
+                dispatch,
+                refetch
             )
             handleNext()
             console.log(formattedData)
-            // Handle further actions after formatting data
         } catch (error) {
             console.error('Error formatting data:', error)
         }
     }
-    // Handle Sales
-    // const landId = location.state?.landId || null
+
     const buyer = useSelector((state) => state.forms?.buyerData)
     const salesDetail = useSelector((state) => state.forms?.salesData)
     const salesDetailed =
         useSelector((state) => state.forms?.LandAssetInfo?.saleDetails) || {}
     const AssetInfo = useSelector((state) => state.forms?.LandAssetInfo) || {}
-    console.log({ AssetInfo }, { salesDetail }, { salesDetailed })
-    const handleSubmitSales = async (signal) => {
-        const buyerid = localStorage.getItem('buyerId')
-        console.log({ buyerid })
+    const handleSubmitSales = async () => {
+        const Selectedbuyerid = localStorage.getItem('buyerId')
+        const email = salesDetail?.buyerEmail
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+        if (email && !emailPattern.test(email)) {
+            console.error('Invalid email format')
+            setEmailerror('Please enter a valid email address.')
+            return
+        }
+
         const payload = {
             landId,
             referenceNumber: salesDetail.referenceNumber ?? null,
@@ -377,32 +417,27 @@ const Tabs = () => {
             commission: salesDetailed.commission
                 ? +salesDetailed.commission
                 : null,
-            saleValue: salesDetailed.salesValue
-                ? +salesDetailed.salesValue
+            saleValue: salesDetail.salesValue ? +salesDetail.salesValue : null,
+            saleDate: null,
+            salesRepresentative: null,
+            agentName: salesDetail.agentNameId ?? null,
+            buyerId: Selectedbuyerid ? +Selectedbuyerid : null,
+            paymentAmount: salesDetail.paymentAmount
+                ? +salesDetail.paymentAmount
                 : null,
-            saleDate: salesDetailed.salesDate ?? null,
-            salesRepresentative: salesDetail.salesRepresentative,
-            agentName: salesDetail.agentName,
-            buyerId: salesDetailed.buyerId ? +salesDetailed.buyerId : null,
-            paymentAmount: salesDetailed.paymentAmount
-                ? +salesDetailed.paymentAmount
-                : null,
-            discount: salesDetailed.discount ? +salesDetailed.discount : null,
-            vatAmount: salesDetailed.vat ? +salesDetailed.vat : null,
-            paymentTerm: salesDetailed.paymentTerm ?? null,
+            discount: salesDetail.discount ? +salesDetail.discount : null,
+            vatAmount: salesDetail.vat ? +salesDetail.vat : null,
+            paymentTerm: salesDetail.paymentTerm ?? null,
             paymentStatus: salesDetail.paymentStatus,
             depositStatus: salesDetail.depositStatus,
             collectedStatus: salesDetail.collectedStatus,
-            paymentDate: salesDetailed.paymentDate ?? null,
-            id: buyerid
-                ? +buyerid
-                : salesDetailed.salesId
-                ? +salesDetailed.salesId
+            paymentDate: salesDetail.paymentDate
+                ? salesDetail.paymentDate
                 : null,
-            newBuyerId: null,
+            buyerIdField: salesDetail.buyerId ? salesDetail.buyerId : null,
             buyerName: salesDetail.buyerName ?? null,
-            buyerEmail: salesDetail.buyerEmail ?? null,
-            buyerMobile: salesDetail.buyerMobile ?? null,
+            buyerEmail: salesDetail.email ?? null,
+            buyerMobile: salesDetail.mobile ?? null,
             companyId: salesDetail.companyId ?? null,
             reetNumber: salesDetail.reetNumber,
             reetDate: salesDetail.reetDate,
@@ -410,36 +445,47 @@ const Tabs = () => {
             reetStatusId: salesDetail.reetStatusId,
             collaction: null,
         }
-        console.log({ payload }, 'in sybmit')
+
+        console.log({ payload }, 'in submit')
+
         try {
             const response = await fetch(`${baseURL}Sales/UpsertSale`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify(payload),
-                signal,
             })
-
+            if (response.ok) {
+                // submitAction()
+                // const data = await refetch()
+                // dispatch(setInitialLandAssetInfo(data?.data?.data))
+                // dispatch(setEditable())
+            }
             if (!response.ok) {
                 const errorData = await response.json()
-                console.log({ errorData })
-                throw new Error(
-                    errorData.message || 'Failed to submit sales details.'
-                )
+                const data = await refetch()
+                dispatch(setInitialLandAssetInfo(data?.data?.data))
+                dispatch(setEditable(false))
             }
         } catch (error) {
-            handleApiError(error, 'Sales submission failed')
-            throw error
+            const errorData = await response.json()
+            console.log(errorData.responseException.exceptionMessage)
         } finally {
-            dispatch(setEditable(true))
+            // const data = await refetch()
+            // dispatch(setInitialLandAssetInfo(data?.data?.data))
+            // dispatch(setEditable(false))
             localStorage.removeItem('buyerId')
         }
     }
+
     return (
         <div
             ref={timelineContainerRef}
-            className="grid gap-8 pt-16 3xl:pt-[97px]"
+            className="grid gap-8 pt-16 3xl:pt-[97px] rounded-b-3xl"
         >
-            <div className="border-b">
+            <div className="border-b border-primary-100">
                 <nav
                     className="flex gap-2"
                     style={{
@@ -471,6 +517,36 @@ const Tabs = () => {
                 }}
             >
                 {renderContent()}
+                {(roleName === 'Approver' || roleName === 'Editor') &&
+                    (landassetinfo?.status === 'Approved' ||
+                        landassetinfo?.status === 'Send Back') && (
+                        <div className="mt-5">
+                            {landassetinfo?.trial?.map(
+                                (trial) =>
+                                    trial?.comment && (
+                                        <div
+                                            key={trial.commentId}
+                                            className="border-b mb-2 pb-2"
+                                        >
+                                            <div className="flex justify-between">
+                                                <span className="font-semibold">
+                                                    {trial.actorName}
+                                                </span>
+                                                <span className="text-gray-500">
+                                                    {new Date(
+                                                        trial.actionTime
+                                                    ).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <p className="mt-1">
+                                                {trial.comment}
+                                            </p>
+                                        </div>
+                                    )
+                            )}
+                        </div>
+                    )}
+
                 {roleName === 'Approver' &&
                     landassetinfo?.status !== 'Approved' &&
                     landassetinfo?.status !== 'Send Back' && (
@@ -601,7 +677,8 @@ const Tabs = () => {
                                 )}
                             {activeTab === 'ownership' &&
                                 department === 'Legal' &&
-                                landassetinfo?.isWlt === 'No' && (
+                                landassetinfo?.isWlt === 'No' &&
+                                landassetinfo?.businessPlan !== 'Sale' && (
                                     <>
                                         <Button
                                             className="bg-white text-primary-Main px-6 py-3 rounded-lg font-bold border-primary-Main border text-base"
@@ -614,6 +691,19 @@ const Tabs = () => {
                                             onClick={handleApprove}
                                         >
                                             Approve
+                                        </Button>
+                                    </>
+                                )}
+                            {activeTab === 'ownership' &&
+                                department === 'Legal' &&
+                                landassetinfo?.isWlt === 'No' &&
+                                landassetinfo?.businessPlan === 'Sale' && (
+                                    <>
+                                        <Button
+                                            onClick={handleNext}
+                                            className="bg-primary-Main text-white px-6 py-3 rounded-lg font-bold text-base"
+                                        >
+                                            Next
                                         </Button>
                                     </>
                                 )}
@@ -960,6 +1050,28 @@ const Tabs = () => {
                         )}
                 </div>
 
+                <div className="flex justify-end relative">
+                    <div className="absolute top-[-92px] right-[121px]">
+                        {isEditable &&
+                            activeTab === 'finance' &&
+                            department === 'Finance' &&
+                            bussinessPlan === 'Sale' &&
+                            (roleName === 'Editor' ||
+                                (roleName === 'Approver' &&
+                                    (landassetinfo?.status ===
+                                        'Data Not Submitted' ||
+                                        landassetinfo?.status ===
+                                            'Send Back'))) && (
+                                <Button
+                                    onClick={handlePrevious}
+                                    className="bg-primary-Main text-white px-6 py-3 rounded-lg font-bold text-base"
+                                >
+                                    Previous
+                                </Button>
+                            )}
+                    </div>
+                </div>
+
                 {isEditable &&
                     department === 'Land Bank' &&
                     ((roleName === 'Editor' &&
@@ -1038,12 +1150,16 @@ const Tabs = () => {
                                         </Button>
                                         <Button
                                             className="bg-primary-Main text-white px-6 py-3 rounded-lg font-bold text-base"
-                                            onClick={handleSubmit}
+                                            onClick={() => {
+                                                handleSubmitSales()
+                                                handleSubmit()
+                                            }}
                                         >
                                             Submit
                                         </Button>
                                     </>
                                 )}
+
                             {activeTab === 'sales' &&
                                 landassetinfo?.isWlt === 'No' &&
                                 bussinessPlan === 'Sale' && (
@@ -1062,6 +1178,7 @@ const Tabs = () => {
                                         </Button>
                                     </>
                                 )}
+
                             {activeTab === 'sales' &&
                                 landassetinfo?.isWlt === 'No' &&
                                 bussinessPlan !== 'Sale' && (

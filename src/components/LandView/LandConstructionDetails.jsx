@@ -12,11 +12,13 @@ import {
     isRoleEditorApprover,
     isStatusDataNotSubmittedOrSentBack,
 } from '../../lib/AcessCheck'
+import { useState } from 'react'
 const ConstructionForm = () => {
     const dispatch = useDispatch()
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
     const isEditable = useSelector((state) => state?.forms?.isEditable)
+    const [openDropdown, setOpenDropdown] = useState(null)
     const landAssetInfo =
         useSelector((state) => state?.forms?.LandAssetInfo) || {}
     const {
@@ -109,6 +111,8 @@ const ConstructionForm = () => {
                             onChange={handleInputChange}
                             label=""
                             value={masterplan}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     </div>
                     <div className="w-full space-y-1">
@@ -119,6 +123,8 @@ const ConstructionForm = () => {
                             onChange={handleInputChange}
                             label=""
                             value={infraApproval}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     </div>
                     <div className="w-full col-span-1 space-y-1">
@@ -129,6 +135,8 @@ const ConstructionForm = () => {
                             onChange={handleInputChange}
                             label=""
                             value={infraContraction}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     </div>
                     <div className="space-y-1">
@@ -139,6 +147,8 @@ const ConstructionForm = () => {
                             onChange={handleInputChange}
                             label=""
                             value={munHandingOver}
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     </div>
                 </div>

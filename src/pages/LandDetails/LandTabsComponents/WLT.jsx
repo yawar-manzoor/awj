@@ -5,136 +5,65 @@ import left from '../../../assets/AssetCardIcons/left-btn.svg'
 import right from '../../../assets/AssetCardIcons/right-btn.svg'
 import { useSelector } from 'react-redux'
 import { useDispatch } from 'react-redux'
-import { updateLandAssetInfo } from '../../../features/forms/formSlice'
+import {
+    setInitialLandAssetInfo,
+    updateLandAssetInfo,
+} from '../../../features/forms/formSlice'
 import PulseLoader from 'react-spinners/PulseLoader'
 import axios from '../../../api/axios'
 import { useNavigate } from 'react-router-dom'
 import { setEditable } from '../../../features/forms/formSlice'
+import CustomSelect from '../../../components/ui/CustomDropdown'
 
-const WLT = () => {
-    // const roleName = localStorage.getItem('roleName')
-    // const department = localStorage.getItem('department')
-    // const whiteLandDetails =
-    //     useSelector((state) => state.forms.LandAssetInfo.whiteLandDetails) || []
-    // const landassetinfo = useSelector((state) => state.forms.LandAssetInfo)
-    // const [selectedOwner, setSelectedOwner] = useState(null)
-    // const [selectedYearIndex, setSelectedYearIndex] = useState(0)
-    // const isEditable = useSelector((state) => state.forms.isEditable)
-    // const dispatch = useDispatch()
-
-    // // UseEffect for setting the selected owner
-    // useEffect(() => {
-    //     if (whiteLandDetails[selectedYearIndex]?.wltDetails?.length > 0) {
-    //         const firstOwner = whiteLandDetails[selectedYearIndex].wltDetails[0]
-    //         setSelectedOwner(firstOwner)
-    //     } else {
-    //         setSelectedOwner(null)
-    //     }
-    // }, [whiteLandDetails, selectedYearIndex])
-
-    // // Handle year change and owner selection
-    // const handleYearChange = (index) => {
-    //     setSelectedYearIndex(index)
-    // }
-
-    // const handlePrevYear = () => {
-    //     setSelectedYearIndex((prevIndex) =>
-    //         prevIndex > 0 ? prevIndex - 1 : whiteLandDetails.length - 1
-    //     )
-    // }
-
-    // const handleNextYear = () => {
-    //     setSelectedYearIndex((prevIndex) =>
-    //         prevIndex < whiteLandDetails.length - 1 ? prevIndex + 1 : 0
-    //     )
-    // }
-
-    // // Handle rendering logic
-    // const currentDetails = whiteLandDetails[selectedYearIndex]
-    // const owners = currentDetails?.wltDetails || []
-    // const [owners, setOwners] = useState([]); // Initialize with an empty array or your actual initial data
-
-    // const handleFieldChange = (e) => {
-    //     const { name, value } = e.target
-
-    //     if (selectedOwner) {
-    //         // Update the selectedOwner state with the new field value
-    //         const updatedOwner = {
-    //             ...selectedOwner,
-    //             [name]: value, // Dynamically update the field based on the input's 'name' attribute
-    //         }
-
-    //         // Update the selectedOwner state
-    //         setSelectedOwner(updatedOwner)
-
-    //         // Update the whiteLandDetails with the new owner info
-    //         const updatedWhiteLandDetails = whiteLandDetails.map((detail) =>
-    //             detail === currentDetails // Find the current selected year details
-    //                 ? {
-    //                       ...detail,
-    //                       wltDetails: detail.wltDetails.map((owner) =>
-    //                           owner === selectedOwner ? updatedOwner : owner
-    //                       ),
-    //                   }
-    //                 : detail
-    //         )
-
-    //         // Dispatch the updated whiteLandDetails to the store
-    //         dispatch(
-    //             updateLandAssetInfo({
-    //                 whiteLandDetails: updatedWhiteLandDetails,
-    //             })
-    //         )
-    //         console.log('Updated White Land Details:', updatedWhiteLandDetails)
-    //     }
-    // }
+const WLT = ({ refetch }) => {
+    const navigate = useNavigate()
+    const token = localStorage.getItem('token')
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
     const landassetinfo = useSelector((state) => state.forms.LandAssetInfo)
+    const actionAssetId = useSelector(
+        (state) => state.forms.LandAssetInfo?.assetId
+    )
     console.log('landassetinfo', landassetinfo)
-    // Fetch necessary data from Redux store
+
     const whiteLandDetails =
         useSelector((state) => state.forms.LandAssetInfo.whiteLandDetails) || []
     const isEditable = useSelector((state) => state.forms.isEditable)
     const dispatch = useDispatch()
+    console.log(whiteLandDetails, 'whiteLandDetails in wlt tab ')
 
-    // States for selected owner and year
     const [selectedOwner, setSelectedOwner] = useState(null)
     const [selectedYearIndex, setSelectedYearIndex] = useState(0)
-    // const [owners, setOwners] = useState([]) // Manage owners with useState
+
     const currentDetails = whiteLandDetails[selectedYearIndex]
     const owners = currentDetails?.wltDetails || []
-    // Set owners based on the selected year
+
     useEffect(() => {
         const currentYearOwners =
             whiteLandDetails[selectedYearIndex]?.wltDetails || []
-        // Check if selectedOwner exists in the current year's owners
+
         if (
             !selectedOwner ||
             !currentYearOwners.find(
                 (owner) => owner.wltId === selectedOwner.wltId
             )
         ) {
-            // If not, set it to the first owner
             setSelectedOwner(
                 currentYearOwners.length > 0 ? currentYearOwners[0] : null
             )
         }
     }, [whiteLandDetails, selectedYearIndex, selectedOwner])
 
-    // Handle year change
     const handleYearChange = (index) => {
         setSelectedYearIndex(index)
     }
 
-    // Navigate to previous year
     const handlePrevYear = () => {
         setSelectedYearIndex((prevIndex) =>
             prevIndex > 0 ? prevIndex - 1 : whiteLandDetails.length - 1
         )
     }
 
-    // Navigate to next year
     const handleNextYear = () => {
         setSelectedYearIndex((prevIndex) =>
             prevIndex < whiteLandDetails.length - 1 ? prevIndex + 1 : 0
@@ -149,28 +78,25 @@ const WLT = () => {
                 if (owner.wltId === selectedOwner.wltId) {
                     return {
                         ...owner,
-                        [name]: value, // Update the specific field
+                        [name]: value,
                     }
                 }
                 return owner
             })
 
-            // Update selectedOwner directly
             const updatedSelectedOwner = { ...selectedOwner, [name]: value }
-            setSelectedOwner(updatedSelectedOwner) // Update the selectedOwner with the new value
+            setSelectedOwner(updatedSelectedOwner)
 
-            // Update whiteLandDetails with the modified owner
             const updatedWhiteLandDetails = whiteLandDetails.map(
                 (detail, index) =>
                     index === selectedYearIndex
                         ? {
                               ...detail,
-                              wltDetails: updatedOwners, // Replace the owners for the current year
+                              wltDetails: updatedOwners,
                           }
                         : detail
             )
 
-            // Dispatch the updated whiteLandDetails
             dispatch(
                 updateLandAssetInfo({
                     whiteLandDetails: updatedWhiteLandDetails,
@@ -179,29 +105,24 @@ const WLT = () => {
         }
     }
     const formatDate = (date) => {
-        if (!date) return '2024-09-24' // Default date if no date is provided
+        if (!date) return '2024-09-24'
 
-        // Check if the date is a valid string before proceeding
         if (typeof date !== 'string') {
             console.error('Invalid date format:', date)
-            return '2024-09-24' // Return default date or handle it accordingly
+            return '2024-09-24'
         }
 
-        // Split the date string assuming the format is MM/DD/YYYY
         const [month, day, year] = date.split('/')
 
-        // Check if all parts (month, day, year) are defined
         if (!month || !day || !year) {
             console.error('Incomplete date:', date)
-            return '2024-09-24' // Return default date if the date is incomplete
+            return '2024-09-24'
         }
 
-        // Return the formatted date in YYYY-MM-DD without any timezone shifts
         return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
     }
 
     const formatForAPI = async (whiteLandDetails) => {
-        // Check if whiteLandDetails is not empty
         {
             console.log(
                 'ppppppppppppppppppppppppppppp',
@@ -210,111 +131,132 @@ const WLT = () => {
         }
         if (whiteLandDetails.length === 0) return null
 
-        // Initialize an array to hold the formatted payloads
         const payloads = []
 
-        // Iterate over each detail in whiteLandDetails
         whiteLandDetails.forEach((detail) => {
-            // Build the upsertWlt array from the details for the current duration
             const upsertWlt = detail.wltDetails.map((wltDetail) => ({
-                wltId: wltDetail.wltId || null, // Default to null if not available
-                tdId: wltDetail.tdId || null, // Default to null if not available
-                landID: landassetinfo?.landId, // Default to null if not available
-                duration: detail.duration || null, // Use duration from the current detail
-                wltPhase: wltDetail.wltPhase || null, // Default to null if not available
-                masterPlanNoID: wltDetail.masterPlanNoID || null, // Default to null if not available
+                wltId: wltDetail.wltId || null,
+                tdId: wltDetail.tdId || null,
+                landID: landassetinfo?.landId,
+                duration: null,
+                wltPhase: wltDetail.wltPhase || null,
+                masterPlanNoID: wltDetail.masterPlanNoID || null,
                 statusOfSubTitleDeedID:
-                    wltDetail.statusOfSubTitleDeedID || null, // Default to null if not available
-                invoiceNumber: wltDetail.invoiceNumber || null, // Default to null if not available
-                notificationDate: formatDate(wltDetail.notificationDate), // Format date
-                tdOwnerID: wltDetail.tdOwnerID || null, // Default to null if not available
-                ownershipPercentage: wltDetail.ownershipPercentage || null, // Default to "string"
-                wltOrderNo: wltDetail.wltOrderNo || null, // Default to null if not available
-                amount: wltDetail.amount || null, // Default to null if not available
-                sadadNo: wltDetail.sadadNo || null, // Default to null if not available
-                objDeadline: formatDate(wltDetail.objDeadline), // Format date
-                paymentDeadline: formatDate(wltDetail.paymentDeadline), // Format date
-                dueDate: formatDate(wltDetail.dueDate), // Format date
+                    wltDetail.statusOfSubTitleDeedID || null,
+                invoiceNumber: wltDetail.invoiceNumber || null,
+                notificationDate: formatDate(wltDetail.notificationDate),
+                tdOwnerID: wltDetail.tdOwnerID || null,
+                ownershipPercentage: null,
+                wltOrderNo: wltDetail.wltOrderNo || null,
+                amount: wltDetail.amount || null,
+                sadadNo: wltDetail.sadadNo || null,
+                objDeadline: formatDate(wltDetail.objDeadline),
+                paymentDeadline: formatDate(wltDetail.paymentDeadline),
+                dueDate: formatDate(wltDetail.dueDate),
                 paymentStatus: (() => {
-                    // Determine payment status based on conditions
                     if (wltDetail.paymentStatus === 'Paid') return 1
                     if (wltDetail.paymentStatus === 'Unpaid') return 2
                     if (wltDetail.paymentStatus === 'NA') return
-                    return 0 // Default to 0 for any other case
+                    return null
                 })(),
-                note: wltDetail.note || null, // Default to "string"
-                objDescription: wltDetail.objDescription || null, // Default to "string"
+                note: wltDetail.note || null,
+                objDescription: wltDetail.objDescription || null,
                 caseNumberBeforeTheBoardOfGrievances:
-                    wltDetail.caseNumberBeforeTheBoardOfGrievances || null, // Default to "string"
-                objectionNumber: wltDetail.objectionNumber || null, // Default to "string"
-                circle: wltDetail.circle || null, // Default to "string"
+                    wltDetail.caseNumberBeforeTheBoardOfGrievances || null,
+                objectionNumber: wltDetail.objectionNumber || null,
+                circle: wltDetail.circle || null,
                 dateOfSubmissionOfTheObjection: formatDate(
                     wltDetail.dateOfSubmissionOfTheObjection
-                ), // Format date
-                hearingTime: formatDate(wltDetail.hearingTime), // Format date
+                ),
+                hearingTime: formatDate(wltDetail.hearingTime),
 
                 objStatus: (() => {
-                    // Log the value being assigned to objStatus for debugging
                     const statusValue = (() => {
                         console.log('Current objStatus:', wltDetail.objStatus)
 
                         if (wltDetail.objStatus === 'Accepted') return 1
                         if (wltDetail.objStatus === 'Rejected') return 2
                         if (wltDetail.objStatus === 'NA') return null
-                        return null // Default to 0 for any other case
+                        return null
                     })()
                     console.log('Assigned objStatus:', statusValue)
-                    return statusValue // Return the final computed status
+                    return statusValue
                 })(),
             }))
 
-            // Construct the final payload for the current duration
             const payload = {
-                duration: detail.duration || 'string', // Use duration from the current detail
+                duration: null,
                 upsertWlt: upsertWlt,
             }
 
-            payloads.push(payload) // Add the payload to the array
+            payloads.push(payload)
         })
 
         try {
             // Send all payloads to the API; modify this as needed if you only want to send one at a time
-            const response = await axios.post('/Land/UpsertLandWLT', payloads)
+            const response = await axios.post('/Land/UpsertLandWLT', payloads, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            })
             console.log('API Response:', response.data)
-            return response.data // Return the response data if needed
+            const data = await refetch()
+            dispatch(setInitialLandAssetInfo(data?.data?.data))
+            dispatch(setEditable(false))
         } catch (error) {
             console.error('API Error:', error)
-            throw error // Rethrow the error for further handling
+            throw error
         }
     }
 
-    // Example usage to transform the GET API data
     const handleSubmit = async () => {
         try {
-            // Call formatForAPI and await the result
             const formattedData = await formatForAPI(whiteLandDetails)
-            console.log('Formatted Data:', formattedData) // Log the formatted data
+            console.log('Formatted Data:', formattedData)
 
-            // Now call the Land/LandUpdateAction API
-            const response = await axios.post('Land/LandUpdateAction', {
-                landId: landassetinfo?.landId,
-                action: 3,
-            })
+            const response = await axios.post(
+                'Land/LandUpdateAction',
+                {
+                    landId: landassetinfo?.landId,
+                    action: 3,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
 
-            console.log('API Response:', response.data) // Log the API response
-            navigate('/landbank') // Navigate after successful response
-            dispatch(setEditable(false)) // Update the Redux state or any local state
+            console.log('API Response:', response.data)
+            if (roleName === 'Approver') {
+                navigate('/approver-analytics', {
+                    state: { actionAssetId },
+                })
+            } else if (roleName === 'Editor') {
+                navigate('/analytics', { state: { actionAssetId } })
+            } else {
+                navigate('/landbank')
+            }
+            dispatch(setEditable(false))
         } catch (error) {
-            console.error('API Error:', error) // Handle errors
+            console.error('API Error:', error)
         }
     }
 
     const handleWltData = async () => {
         try {
-            const response = await axios.post('Land/LandUpdateAction', {
-                landId: landassetinfo?.landId,
-                action: 3,
-            })
+            const response = await axios.post(
+                'Land/LandUpdateAction',
+                {
+                    landId: landassetinfo?.landId,
+                    action: 3,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            )
             console.log('API Response:', response.data)
             navigate('/landbank')
             dispatch(setEditable(false))
@@ -328,7 +270,7 @@ const WLT = () => {
                 <h1 className="text-primary-Main font-semibold text-2xl">
                     WLT Tax Details
                 </h1>
-                {whiteLandDetails.length > 0 && (
+                {whiteLandDetails.length > 1 && (
                     <div>
                         <button onClick={handlePrevYear}>
                             <img src={left} alt="Previous Year" />
@@ -674,23 +616,24 @@ const WLT = () => {
                                                     'Data Not Submitted' ||
                                                     landassetinfo?.status ===
                                                         'Send Back'))) ? (
-                                            <select
+                                            <CustomSelect
                                                 name="paymentStatus"
+                                                onChange={handleFieldChange}
                                                 value={
                                                     selectedOwner.paymentStatus
                                                 }
-                                                onChange={(e) =>
-                                                    handleFieldChange(e)
-                                                }
-                                                className="border rounded px-2 w-40 text-primary-500 outline-none focus:outline-none"
-                                            >
-                                                <option value="Paid">
-                                                    Paid
-                                                </option>
-                                                <option value="Unpaid">
-                                                    Unpaid
-                                                </option>
-                                            </select>
+                                                options={[
+                                                    {
+                                                        value: 'Paid',
+                                                        label: 'Paid',
+                                                    },
+                                                    {
+                                                        value: 'Unpaid',
+                                                        label: 'Unpaid',
+                                                    },
+                                                ]}
+                                                // className="border rounded  w-40 text-primary-500 outline-none focus:outline-none"
+                                            />
                                         ) : (
                                             <>
                                                 {/* Conditionally render icon based on payment status */}
@@ -774,21 +717,22 @@ const WLT = () => {
                                                     'Send Back' ||
                                                     landassetinfo?.status ===
                                                         'Data Not Submitted'))) ? (
-                                            <select
+                                            <CustomSelect
                                                 name="objStatus"
+                                                onChange={handleFieldChange}
                                                 value={selectedOwner?.objStatus}
-                                                onChange={(e) =>
-                                                    handleFieldChange(e)
-                                                }
-                                                className="border rounded px-2 w-40 text-primary-500 outline-none focus:outline-none"
-                                            >
-                                                <option value="Accepted">
-                                                    Accepted
-                                                </option>
-                                                <option value="Rejected">
-                                                    Rejected
-                                                </option>
-                                            </select>
+                                                options={[
+                                                    {
+                                                        value: 'Accepted',
+                                                        label: 'Accepted',
+                                                    },
+                                                    {
+                                                        value: 'Rejected',
+                                                        label: 'Rejected',
+                                                    },
+                                                ]}
+                                                // className="border rounded px-2 w-40 text-primary-500 outline-none focus:outline-none"
+                                            />
                                         ) : (
                                             <>
                                                 {selectedOwner?.objStatus ===
@@ -844,7 +788,7 @@ const WLT = () => {
                                         placeholder="Enter Description"
                                         value={selectedOwner?.note}
                                         name="note"
-                                        className="w-full py-1.5 font-normal text-base placeholder:text-primary-500 text-primary-500 px-4 min-h-28 focus:outline-none border border-primary-400 rounded-lg outline-none focus:outline-none"
+                                        className="w-full py-1.5 font-normal text-base placeholder:text-primary-500 text-primary-500 px-4 min-h-28 border border-primary-400 rounded-lg outline-none focus:outline-none"
                                     />
                                 ) : (
                                     <p className="text-base font-semibold text-neutral-700">
@@ -892,6 +836,7 @@ const WLT = () => {
             department === 'Legal' &&
             ((roleName === 'Editor' &&
                 landassetinfo?.status === 'Data Not Submitted') ||
+                landassetinfo?.status === 'Send Back' ||
                 (roleName === 'Approver' &&
                     (landassetinfo?.status === 'Send Back' ||
                         landassetinfo?.status === 'Data Not Submitted'))) ? (

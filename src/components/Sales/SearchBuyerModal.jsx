@@ -25,7 +25,11 @@ const SearchBuyerModal = ({
                         <h2 className="text-xl text-primary-Main">
                             Search Buyer
                         </h2>
-                        <X color="gray" onClick={closeModal} />
+                        <X
+                            color="gray"
+                            onClick={closeModal}
+                            className="cursor-pointer"
+                        />
                     </div>
                     <div className="relative my-4">
                         <Input

@@ -2,6 +2,7 @@ import paid from '../../../assets/ApprovedLandBank.svg'
 import ok from '../../../assets/AssetCardIcons/tick-circle.svg'
 import minus from '../../../assets/AssetCardIcons/minus-circle.svg'
 import downloadIcon from '../../../assets/EyeIcon.svg'
+import upload from '../../../assets/download-icon.svg'
 import { useSelector, useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -15,6 +16,12 @@ import axios from '../../../api/axios'
 import PulseLoader from 'react-spinners/PulseLoader'
 import { useEffect, useState } from 'react'
 import { baseURL } from '../../../lib/global'
+import {
+    isRoleEditorApprover,
+    isStatusDataNotSubmittedOrSentBack,
+} from '../../../lib/AcessCheck'
+import useWindowWidth from '../../../hooks/useWindowWidth'
+import toast from 'react-hot-toast'
 
 // Predefined options for select elements
 const ZAKAT_OPTIONS = [
@@ -30,16 +37,23 @@ const ZAKAT_PAYMENT_OPTIONS = [
 export default function LandFinance({ refetch }) {
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
-    // console.log(roleName, department, 'roleName')
+    const token = localStorage.getItem('token')
     const isEditable = useSelector((state) => state.forms.isEditable)
     const [loading, setLoading] = useState(false)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const windowWidth = useWindowWidth()
     const FinanceDetails = useSelector(
         (state) => state.forms.LandAssetInfo?.financeDetails
     )
     const landInfo = useSelector((state) => state?.forms?.LandAssetInfo)
     const LandId = useSelector((state) => state.forms.LandAssetInfo?.landId)
+    const actionAssetId = useSelector(
+        (state) => state.forms.LandAssetInfo?.assetId
+    )
+
+    const [fileError, setFileError] = useState('')
+    const [Attachment, setAttachments] = useState()
     const [mapData, setMapData] = useState(FinanceDetails?.mapData)
     const handleMapDataChange = (index, field, value) => {
         setMapData((prevData) => {
@@ -58,8 +72,16 @@ export default function LandFinance({ refetch }) {
             setMapData(FinanceDetails?.mapData)
         }
     }, [isEditable, FinanceDetails?.mapData])
+
+    const hasPermissionToEditRett =
+        isEditable &&
+        department === 'Finance' &&
+        isRoleEditorApprover(roleName) &&
+        isStatusDataNotSubmittedOrSentBack(landInfo?.status)
+
+    const TitleDeedId = landInfo?.titleDeed?.titleDeedId
     console.log('finaincineifnien', FinanceDetails)
-    console.log(mapData, 'mapdata')
+
     // const handleInputChange = (field, value, id) => {
     //     console.log(`Field: ${field}, Value: ${value}, ID: ${id}`)
 
@@ -180,7 +202,7 @@ export default function LandFinance({ refetch }) {
         },
     ]
     const latestValue = FinanceDetails?.latestValue || 0
-    const bookValue = FinanceDetails?.bookValue || 0
+    const bookValue = FinanceDetails?.secondLatestValue || 0
 
     const percentDiff =
         bookValue === 0 ? 'N/A' : ((latestValue - bookValue) / bookValue) * 100
@@ -288,10 +310,87 @@ export default function LandFinance({ refetch }) {
     //         setLoading(false) // Ensure loading is turned off after both API calls
     //     }
     // }
+    // const handleFinanceData = async () => {
+    //     setLoading(true)
+
+    //     try {
+    //         const updateFinanceTables = mapData?.map((item) => ({
+    //             financeId: item.financeId,
+    //             bookValue: parseFloat(item.value),
+    //             year: `${item.year}-01-01T00:00:00.000Z`,
+    //         }))
+
+    //         const payload = {
+    //             landId: LandId,
+    //             latestValue: FinanceDetails?.latestValue,
+    //             bookValue: FinanceDetails?.bookValue,
+    //             costPer: FinanceDetails?.costPerPrice,
+    //             zakatImplication: FinanceDetails?.zakatImplicationId,
+    //             zakatPayment: FinanceDetails?.zakatPaymentId,
+    //             updateFinanceTables, // Add the finance table updates here
+    //         }
+
+    //         console.log('Payload:', payload)
+
+    //         const response = await axios.post('Land/UpsertFinance', payload)
+
+    //         if (response.status === 200) {
+    //             console.log('Data updated successfully!')
+
+    //             // Second API call: LandUpdateAction
+    //             const secondApiPayload = {
+    //                 landId: LandId,
+    //                 action: 3,
+    //             }
+
+    //             const secondResponse = await axios.post(
+    //                 'Land/LandUpdateAction',
+    //                 secondApiPayload
+    //             )
+
+    //             if (secondResponse.status === 200) {
+    //                 console.log('Land update action completed successfully!')
+    //                 refetch() // Re-fetch the updated data if necessary
+    //                 dispatch(setEditable(!isEditable))
+
+    //                 // Navigate based on roleName
+    //                 if (roleName === 'Approver') {
+    //                     navigate('/landbank')
+    //                 } else {
+    //                     navigate('/landbank')
+    //                 } // Update the editable state
+    //             } else {
+    //                 console.error(
+    //                     'Error updating land action:',
+    //                     secondResponse.statusText
+    //                 )
+    //             }
+    //         } else {
+    //             console.error(
+    //                 'Error updating finance data:',
+    //                 response.statusText
+    //             )
+    //         }
+    //     } catch (error) {
+    //         console.error('Error during API calls:', error)
+    //     } finally {
+    //         setLoading(false)
+    //     }
+    // }
+
+    // console.log(landInfo?.status)
     const handleFinanceData = async () => {
         setLoading(true)
 
         try {
+            // Retrieve the token from local storage
+            const token = localStorage.getItem('token')
+
+            // If token is not found, handle the error or redirect user
+            if (!token) {
+                throw new Error('User is not authenticated')
+            }
+
             const updateFinanceTables = mapData?.map((item) => ({
                 financeId: item.financeId,
                 bookValue: parseFloat(item.value),
@@ -305,12 +404,16 @@ export default function LandFinance({ refetch }) {
                 costPer: FinanceDetails?.costPerPrice,
                 zakatImplication: FinanceDetails?.zakatImplicationId,
                 zakatPayment: FinanceDetails?.zakatPaymentId,
-                updateFinanceTables, // Add the finance table updates here
+                updateFinanceTables,
             }
 
             console.log('Payload:', payload)
 
-            const response = await axios.post('Land/UpsertFinance', payload)
+            const response = await axios.post('Land/UpsertFinance', payload, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                },
+            })
 
             if (response.status === 200) {
                 console.log('Data updated successfully!')
@@ -323,20 +426,28 @@ export default function LandFinance({ refetch }) {
 
                 const secondResponse = await axios.post(
                     'Land/LandUpdateAction',
-                    secondApiPayload
+                    secondApiPayload,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
                 )
 
                 if (secondResponse.status === 200) {
                     console.log('Land update action completed successfully!')
-                    refetch() // Re-fetch the updated data if necessary
+                    refetch()
                     dispatch(setEditable(!isEditable))
 
-                    // Navigate based on roleName
                     if (roleName === 'Approver') {
-                        navigate('/landbank')
+                        navigate('/approver-analytics', {
+                            state: { actionAssetId },
+                        })
+                    } else if (roleName === 'Editor') {
+                        navigate('/analytics', { state: { actionAssetId } })
                     } else {
                         navigate('/landbank')
-                    } // Update the editable state
+                    }
                 } else {
                     console.error(
                         'Error updating land action:',
@@ -355,8 +466,45 @@ export default function LandFinance({ refetch }) {
             setLoading(false)
         }
     }
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0]
+        const formData = new FormData()
+        formData.append('File', file)
+        formData.append('LandId', LandId)
+        formData.append('TdId', TitleDeedId)
+        formData.append('AttachmentType', 3)
 
-    // console.log(landInfo?.status)
+        if (file) {
+            try {
+                const response = await axios.post(
+                    `${baseURL}Land/AddAttachmentToOneDrive`,
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                )
+
+                if (response.status === 200) {
+                    const data = response.data
+                    console.log(data.data)
+                    setAttachments(data.data)
+                    setFileError('')
+                    toast.success(data.messages)
+                    console.log('File uploaded successfully')
+                } else {
+                    console.log('File upload failed:', response.data)
+                    toast.error('File upload failed')
+                    setAttachments(null)
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error)
+                toast.error('Error uploading file')
+            }
+        }
+    }
+    console.log(landInfo?.financeDetails?.zakatValue)
 
     return (
         <>
@@ -500,9 +648,7 @@ export default function LandFinance({ refetch }) {
                                             landInfo?.status ===
                                                 'Data Not Submitted') ||
                                         landInfo?.status === 'Send Back') &&
-                                    (item.field === 'latestValue' ||
-                                        item.field === 'bookValue' ||
-                                        item.field === 'costPerPrice' ||
+                                    (item.field === 'costPerPrice' ||
                                         item.field === 'zakatValue') ? ( // Include zakatValue field
                                         <input
                                             type="number"
@@ -614,7 +760,7 @@ export default function LandFinance({ refetch }) {
                             ))}
                         </div>
 
-                        <div>
+                        {/* <div>
                             <button className="border-dashed border flex items-center border-primary-400 bg-primary-100 px-5 py-3 rounded-xl font-bold text-sm text-primary-Main">
                                 <img
                                     src={downloadIcon}
@@ -623,6 +769,60 @@ export default function LandFinance({ refetch }) {
                                 />
                                 View ZAKAT Invoice
                             </button>
+                        </div> */}
+                        <div
+                            className={`flex-1 flex ${
+                                isEditable && windowWidth < 1300
+                                    ? 'mt-2'
+                                    : 'justify-end items-center'
+                            }`}
+                        >
+                            {hasPermissionToEditRett ? (
+                                <div className="grid gap-1">
+                                    <div className="flex justify-center items-center">
+                                        <input
+                                            type="file"
+                                            id="fileUpload"
+                                            onChange={handleFileUpload}
+                                            className="hidden"
+                                        />
+
+                                        <label
+                                            htmlFor="fileUpload"
+                                            className="cursor-pointer h-fit border-dashed whitespace-nowrap bg-[#EFECE4]/50 border flex items-center border-primary-Main px-7 py-2 rounded-xl font-bold text-sm text-primary-Main"
+                                        >
+                                            <img
+                                                src={upload}
+                                                alt="upload"
+                                                className="mr-2 rotate-180"
+                                            />
+                                            Add Attachment
+                                        </label>
+                                    </div>
+                                    {/* {Attachment &&
+                                Attachment.map((attachment) => (
+                                    <div className="text-primary-Main ">
+                                        {attachment.attatchmentName}
+                                    </div>
+                                ))} */}
+                                    {/* {fileError && (
+                                <div className="text-red-500 text-sm">
+                                    {fileError}
+                                </div>
+                            )} */}
+                                </div>
+                            ) : (
+                                landInfo?.financeDetails?.zakatValue !== 0 && (
+                                    <Button className="h-fit border-dashed whitespace-nowrap bg-[#EFECE4]/50 border flex items-center border-primary-Main px-7 py-2 rounded-xl font-bold text-sm text-primary-Main">
+                                        <img
+                                            src={downloadIcon}
+                                            alt="download-icon"
+                                            className="mr-2"
+                                        />
+                                        View ZAKAT Invoice
+                                    </Button>
+                                )
+                            )}
                         </div>
                     </div>
                 </div>

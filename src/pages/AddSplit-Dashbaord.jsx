@@ -103,7 +103,7 @@ export default function AddSplitDashbaord() {
 
     return (
         <>
-            <div className="px-12 2xl:px-24  box-border">
+            <div className="px-12 2xl:px-24 4xl:px-32  box-border">
                 <div className="grid grid-cols-5 grid-rows-1 gap-5">
                     <div className="col-span-4 row-start-2">
                         <DashboardApr />

@@ -3,7 +3,7 @@ import {
     setEditable,
     setInitialLandAssetInfo,
 } from '../features/forms/formSlice'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { baseURL } from '../lib/global'
 import Button from './ui/Button'
@@ -12,14 +12,19 @@ import PulseLoader from 'react-spinners/PulseLoader'
 const SubmitButton = ({ refetch }) => {
     const dispatch = useDispatch()
     const location = useLocation()
+    const navigate = useNavigate()
+    const roleName = localStorage.getItem('roleName')
     const { landId } = location?.state || {}
     const [isLoading, setIsLoading] = useState(false)
-    const { isEditable, LandOverView, AssetInfo } = useSelector((state) => ({
-        isEditable: state?.forms?.isEditable,
-        AssetInfo: state?.forms?.LandAssetInfo,
-        LandOverView: state?.forms?.LandOverView,
-    }))
-
+    const { isEditable, LandOverView, AssetInfo, actionAssetId } = useSelector(
+        (state) => ({
+            isEditable: state?.forms?.isEditable,
+            AssetInfo: state?.forms?.LandAssetInfo,
+            LandOverView: state?.forms?.LandOverView,
+            actionAssetId: state.forms.LandAssetInfo.assetId,
+        })
+    )
+    const token = localStorage.getItem('token')
     const handleSubmit = async () => {
         const payload = {
             landId,
@@ -46,20 +51,19 @@ const SubmitButton = ({ refetch }) => {
         try {
             setIsLoading(true)
 
-            // First API Call: UpdateLandOverview
             const response = await fetch(`${baseURL}Land/UpdateLandOverview`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             })
 
             if (response.ok) {
-                // Second API Call: LandUpdateAction
                 const actionPayload = {
                     landId: landId,
-                    action: 3, // Example action value
+                    action: 3,
                 }
 
                 const secondResponse = await fetch(
@@ -68,17 +72,29 @@ const SubmitButton = ({ refetch }) => {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
                         },
+
                         body: JSON.stringify(actionPayload),
                     }
                 )
 
                 if (secondResponse.ok) {
-                    // Refetch data and update state after both API calls are successful
                     const data = await refetch()
                     dispatch(setInitialLandAssetInfo(data?.data.data))
                     console.log(data.data.data, 'after refetch')
                     dispatch(setEditable(!isEditable))
+
+                    if (roleName === 'Approver') {
+                        navigate('/approver-analytics', {
+                            state: { actionAssetId },
+                        })
+                    } else if (roleName === 'Editor') {
+                        navigate('/analytics', { state: { actionAssetId } })
+                    } else {
+                        navigate('/landbank')
+                    }
+                    navigate('/landbank')
                 } else {
                     console.error(
                         'Error in LandUpdateAction:',
@@ -103,7 +119,8 @@ const SubmitButton = ({ refetch }) => {
             onClick={handleSubmit}
             className="border font-bold  text-base rounded-lg px-6 py-3 bg-primary-Main text-white"
         >
-            {isLoading ? <PulseLoader /> : 'Submit'}
+            {/* {isLoading ? <PulseLoader color="white" /> : 'Submit'} */}
+            Submit
         </Button>
     )
 }

@@ -10,11 +10,7 @@ const SelectCustom = ({
     placeholder,
 }) => {
     return (
-        <div
-            className={`relative ${
-                isApprover || isEditor ? '2xl:col-span-2' : ''
-            }`}
-        >
+        <div className={`relative ${isApprover || isEditor ? '' : ''}`}>
             <button
                 className="bg-white border border-primary-input py-3 px-2   rounded-[10px] w-full text-left flex justify-between items-center"
                 onClick={toggleDropdown}

@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 :root {
     --primary-color: #837550;
     --primary-input: #ddd9c8;

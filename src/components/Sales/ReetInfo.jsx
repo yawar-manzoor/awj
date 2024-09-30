@@ -22,10 +22,14 @@ import { useState } from 'react'
 import { useEffect } from 'react'
 import Button from '../ui/Button'
 import toast from 'react-hot-toast'
+import axios from '../../api/axios'
+import FileUpload from './FileUpload'
+
 
 const ReetInfo = () => {
     const department = localStorage.getItem('department')
     const roleName = localStorage.getItem('roleName')
+    const token = localStorage.getItem('token')
     const windowWidth = useWindowWidth()
     const dispatch = useDispatch()
     const reetInfo = useSelector(
@@ -33,6 +37,7 @@ const ReetInfo = () => {
     )
     const isEditable = useSelector((state) => state?.forms?.isEditable)
     const AssetInfo = useSelector((state) => state.forms?.LandAssetInfo) || {}
+    const [openDropdown, setOpenDropdown] = useState(null)
     const [fileError, setFileError] = useState('')
     const [Attachment, setAttachments] = useState()
     const LandId = AssetInfo.landId
@@ -71,9 +76,49 @@ const ReetInfo = () => {
         )
     }
 
+    // const handleFileUpload = async (e) => {
+    //     const file = e.target.files[0]
+    //     console.log('Selected file:', file)
+    //     const formData = new FormData()
+    //     formData.append('File', file)
+    //     formData.append('LandId', LandId)
+    //     formData.append('TdId', TitleDeedId)
+    //     formData.append('AttachmentType', 2)
+
+    //     if (file) {
+    //         try {
+    //             const response = await fetch(
+    //                 `${baseURL}Land//AddAttachmentToOneDrive`,
+    //                 {
+    //                     method: 'POST',
+    //                     body: formData,
+    //                 }
+    //             )
+
+    //             if (response.ok) {
+    //                 const data = await response.json()
+    //                 console.log(data.data)
+    //                 setAttachments(data.data)
+    //                 setFileError('')
+    //                 toast.success(data.messages)
+    //                 // dispatch(setEditable(false))
+    //                 console.log('File uploaded successfully')
+    //             } else {
+    //                 const errorResponse = await response.json()
+    //                 console.log('File upload failed:', errorResponse)
+    //                 // setFileError('File upload failed')
+    //                 toast.error('File upload failed')
+    //                 setAttachments(null)
+    //                 // dispatch(setEditable(false))
+    //             }
+    //         } catch (error) {
+    //             console.error('Error uploading file:', error)
+    //             // dispatch(setEditable(false))
+    //         }
+    //     }
+    // }
     const handleFileUpload = async (e) => {
         const file = e.target.files[0]
-        console.log('Selected file:', file)
         const formData = new FormData()
         formData.append('File', file)
         formData.append('LandId', LandId)
@@ -82,33 +127,31 @@ const ReetInfo = () => {
 
         if (file) {
             try {
-                const response = await fetch(
-                    `${baseURL}Land//AddAttachmentToOneDrive`,
+                const response = await axios.post(
+                    `${baseURL}Land/AddAttachmentToOneDrive`,
+                    formData,
                     {
-                        method: 'POST',
-                        body: formData,
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
                     }
                 )
 
-                if (response.ok) {
-                    const data = await response.json()
+                if (response.status === 200) {
+                    const data = response.data
                     console.log(data.data)
                     setAttachments(data.data)
                     setFileError('')
                     toast.success(data.messages)
-                    // dispatch(setEditable(false))
                     console.log('File uploaded successfully')
                 } else {
-                    const errorResponse = await response.json()
-                    console.log('File upload failed:', errorResponse)
-                    // setFileError('File upload failed')
+                    console.log('File upload failed:', response.data)
                     toast.error('File upload failed')
                     setAttachments(null)
-                    // dispatch(setEditable(false))
                 }
             } catch (error) {
                 console.error('Error uploading file:', error)
-                // dispatch(setEditable(false))
+                toast.error('Error uploading file')
             }
         }
     }
@@ -117,6 +160,8 @@ const ReetInfo = () => {
             setFileError(null)
         }
     }, [isEditable])
+    console.log(reetInfo?.reetAmount)
+
     return (
         <div className="grid gap-4 pt-8  ">
             <h2 className="text-2xl font-semibold  text-primary-Main">
@@ -175,6 +220,8 @@ const ReetInfo = () => {
                                 onChange={handleInputChange}
                                 value={reetInfo?.reetStatus}
                                 options={ReetStatusOptions}
+                                openDropdown={openDropdown}
+                                setOpenDropdown={setOpenDropdown}
                             />
                         ) : (
                             <span className="flex gap-2 text-primary-600 font-bold text-lg">
@@ -232,48 +279,23 @@ const ReetInfo = () => {
                     }`}
                 >
                     {hasPermissionToEditRett ? (
-                        <div className="grid gap-1">
-                            <div className="flex justify-center items-center">
-                                <input
-                                    type="file"
-                                    id="fileUpload"
-                                    onChange={handleFileUpload}
-                                    className="hidden"
-                                />
-
-                                <label
-                                    htmlFor="fileUpload"
-                                    className="cursor-pointer h-fit border-dashed whitespace-nowrap bg-[#EFECE4]/50 border flex items-center border-primary-Main px-7 py-2 rounded-xl font-bold text-sm text-primary-Main"
-                                >
-                                    <img
-                                        src={downloadIcon}
-                                        alt="upload"
-                                        className="mr-2 rotate-180"
-                                    />
-                                    Add Attachment
-                                </label>
-                            </div>
-                            {/* {Attachment &&
-                                Attachment.map((attachment) => (
-                                    <div className="text-primary-Main ">
-                                        {attachment.attatchmentName}
-                                    </div>
-                                ))} */}
-                            {/* {fileError && (
-                                <div className="text-red-500 text-sm">
-                                    {fileError}
-                                </div>
-                            )} */}
-                        </div>
+                        <FileUpload
+                            handleFileUpload={handleFileUpload}
+                            downloadIcon={downloadIcon}
+                            // attachment={attachment}
+                            fileError={fileError}
+                        />
                     ) : (
-                        <Button className="h-fit border-dashed whitespace-nowrap bg-[#EFECE4]/50 border flex items-center border-primary-Main px-7 py-2 rounded-xl font-bold text-sm text-primary-Main">
-                            <img
-                                src={eyeview}
-                                alt="download-icon"
-                                className="mr-2"
-                            />
-                            View RETT Invoice
-                        </Button>
+                        reetInfo?.reetDate !== 'NA' && (
+                            <Button className="h-fit border-dashed whitespace-nowrap bg-[#EFECE4]/50 border flex items-center border-primary-Main px-7 py-2 rounded-xl font-bold text-sm text-primary-Main">
+                                <img
+                                    src={eyeview}
+                                    alt="download-icon"
+                                    className="mr-2"
+                                />
+                                View RETT Invoice
+                            </Button>
+                        )
                     )}
                 </div>
             </div>

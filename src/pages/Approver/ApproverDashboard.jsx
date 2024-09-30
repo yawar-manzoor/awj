@@ -156,7 +156,7 @@ const ApproverDashboard = () => {
     }
 
     return (
-        <div className="px-12 2xl:px-24">
+        <div className="px-12 2xl:px-24 4xl:px-32">
             <div className="my-6">
                 <DashboardApr />
             </div>

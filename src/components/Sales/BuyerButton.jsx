@@ -14,8 +14,7 @@ const BuyerButton = ({ setIsOpen }) => {
     const Status = AssetInfo.status
     return (
         <>
-            {BuyerDetail?.buyerId &&
-                BuyerDetail?.buyerId == 'NA' &&
+            {(!BuyerDetail?.buyerId || BuyerDetail?.buyerId == 'NA') &&
                 !isEditable &&
                 department === 'Sales' &&
                 isRoleEditorApprover(roleName) &&
@@ -31,6 +30,7 @@ const BuyerButton = ({ setIsOpen }) => {
             {BuyerDetail?.buyerId &&
                 BuyerDetail?.buyerId !== 'NA' &&
                 department === 'Sales' &&
+                !isEditable &&
                 isRoleEditorApprover(roleName) &&
                 isStatusDataNotSubmittedOrSentBack(Status) && (
                     <button

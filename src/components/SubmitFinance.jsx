@@ -11,6 +11,7 @@ const SubmitButton = () => {
     const isEditable = useSelector((state) => state.forms?.isEditable)
     const LandOverView = useSelector((state) => state.forms?.LandOverView)
     const location = useLocation()
+    const token = localStorage.getItem('token')
     const [Message, setMessage] = useState('')
     const { landId } = location?.state || {}
     const handleSubmit = async () => {
@@ -50,6 +51,7 @@ const SubmitButton = () => {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
                         },
                         body: JSON.stringify(payload),
                     }

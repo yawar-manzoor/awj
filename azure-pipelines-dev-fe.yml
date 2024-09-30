@@ -1,63 +1,65 @@
-trigger: 
-- main
+trigger:
+    - main
 
 stages:
-- stage: BuildDeploy
-  jobs:
-  - job: Build
-    pool:
-      vmImage: 'ubuntu-latest'
-      
-    steps: 
-    
-     - task: Npm@1
-       inputs:
-         command: 'install'
-    
-     - task: Npm@1
-       inputs:
-         command: 'custom'
-         customCommand: 'run build'
-       env:
-         VITE_BASE_URL: 'http://68.178.165.107:5001/api/'
+    - stage: BuildDeploy
+      jobs:
+          - job: Build
+            pool:
+                vmImage: 'ubuntu-latest'
 
-     - task: PublishBuildArtifacts@1
-       inputs:
-         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-         ArtifactName: 'dist'
-         publishLocation: 'Container'
+            steps:
+                - task: Npm@1
+                  inputs:
+                      command: 'install'
 
-     # Stop the IIS site before copying files
-     - task: SSH@0
-       inputs:
-         sshEndpoint: 'newvm'
-         runOptions: 'commands'
-         commands: '"C:\Windows\System32\inetsrv\appcmd.exe" stop site /site.name:"land_bank_fe"'
-         readyTimeout: '30000'
+                - task: Npm@1
+                  inputs:
+                      command: 'custom'
+                      customCommand: 'run build'
+                  env:
+                      VITE_BASE_URL: 'https://landbankbe.aiiotgeeks.com/api/'
+                      VITE_MICROSOFT_REDIRECT_URI: 'https://landbank.aiiotgeeks.com/'
+                      VITE_MICROSOFT_CLIENT_ID: '4441618f-d9b8-42ed-b7c6-6e6dd079a8f1'
+                      VITE_MICROSOFT_TENANT_ID: '7a3dd99d-c839-4a31-8d02-c9442c49d1c3'
 
-     # Add a delay of 30 seconds to avoid conflicts
-     - script: |
-         sleep 15
-       displayName: 'Wait for 30 seconds'
+                - task: PublishBuildArtifacts@1
+                  inputs:
+                      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+                      ArtifactName: 'dist'
+                      publishLocation: 'Container'
 
-     # Copy files to the target server
-     - task: CopyFilesOverSSH@0
-       inputs:
-         sshEndpoint: 'newvm'
-         sourceFolder: '$(System.DefaultWorkingDirectory)/dist'
-         contents: '**'
-         targetFolder: '/inetpub/wwwroot/LAND_BANK_FE'
-         readyTimeout: '30000'
+                # Stop the IIS site before copying files
+                - task: SSH@0
+                  inputs:
+                      sshEndpoint: 'newvm'
+                      runOptions: 'commands'
+                      commands: '"C:\Windows\System32\inetsrv\appcmd.exe" stop site /site.name:"land_bank_fe"'
+                      readyTimeout: '30000'
 
-     # Add another delay before starting the IIS site to ensure files are properly copied
-     - script: |
-         sleep 15
-       displayName: 'Wait for 30 seconds before starting IIS'
+                # Add a delay of 30 seconds to avoid conflicts
+                - script: |
+                      sleep 15
+                  displayName: 'Wait for 30 seconds'
 
-     # Start the IIS site after files are copied
-     - task: SSH@0
-       inputs:
-         sshEndpoint: 'newvm'
-         runOptions: 'commands'
-         commands: '"C:\Windows\System32\inetsrv\appcmd.exe" start site /site.name:"land_bank_fe"'
-         readyTimeout: '30000'
+                # Copy files to the target server
+                - task: CopyFilesOverSSH@0
+                  inputs:
+                      sshEndpoint: 'newvm'
+                      sourceFolder: '$(System.DefaultWorkingDirectory)/dist'
+                      contents: '**'
+                      targetFolder: '/inetpub/wwwroot/LAND_BANK_FE'
+                      readyTimeout: '30000'
+
+                # Add another delay before starting the IIS site to ensure files are properly copied
+                - script: |
+                      sleep 15
+                  displayName: 'Wait for 30 seconds before starting IIS'
+
+                # Start the IIS site after files are copied
+                - task: SSH@0
+                  inputs:
+                      sshEndpoint: 'newvm'
+                      runOptions: 'commands'
+                      commands: '"C:\Windows\System32\inetsrv\appcmd.exe" start site /site.name:"land_bank_fe"'
+                      readyTimeout: '30000'

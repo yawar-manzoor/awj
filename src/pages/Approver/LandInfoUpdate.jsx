@@ -60,7 +60,7 @@ const LandInfoUpdate = () => {
     }
 
     return (
-        <div className="mx-12 p-8 2xl:mx-24 h-screen rounded-2xl box-border bg-white">
+        <div className="mx-12 p-8 2xl:mx-24 4xl:mx-32 h-screen rounded-2xl box-border bg-white">
             <div className="my-6 text-neutral-600 font-semibold text-3xl">
                 Land Info Updated ..
             </div>

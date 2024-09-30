@@ -11,6 +11,7 @@ import { baseURL } from '../../../lib/global'
 import { LocateOffIcon, MapPinOff, Plus } from 'lucide-react'
 import { LandBussinessPlan } from '../../../components/LandView/LandBussinessPlan'
 import icon from '../../../assets/Card Image/marker-icon.png'
+import axios from '../../../api/axios'
 
 const calculateCentroid = (coordinates) => {
     let latSum = 0
@@ -32,6 +33,7 @@ const customIcon = new L.Icon({
 const LandOverview = ({ refetch }) => {
     const dispatch = useDispatch()
     const roleName = localStorage.getItem('roleName')
+    const token = localStorage.getItem('token')
     const department = localStorage.getItem('department')
     const { isEditable, activeTab, landAssetInfo } = useSelector((state) => ({
         isEditable: state?.forms?.isEditable,
@@ -56,8 +58,13 @@ const LandOverview = ({ refetch }) => {
             if (!landId) return
 
             try {
-                const response = await fetch(
-                    `${baseURL}Sales/GetLandCoordinates?landId=${landId}`
+                const response = await axios.get(
+                    `${baseURL}Sales/GetLandCoordinates?landId=${landId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
                 )
 
                 const data = await response.json()

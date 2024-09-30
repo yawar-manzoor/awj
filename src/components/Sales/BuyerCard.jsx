@@ -24,6 +24,7 @@ const BuyerCard = () => {
     const dispatch = useDispatch()
     const roleName = localStorage.getItem('roleName')
     const department = localStorage.getItem('department')
+    const token = localStorage.getItem('token')
     const isEditable = useSelector((state) => state?.forms?.isEditable)
     const BuyerDetail =
         useSelector((state) => state.forms?.LandAssetInfo?.saleDetails) || {}
@@ -37,6 +38,7 @@ const BuyerCard = () => {
     const [isOpen, setIsOpen] = useState(false)
     const [selectedBuyer, setSelectedBuyer] = useState(null)
     const [Emailerror, setEmailError] = useState('')
+    const [openDropdown, setOpenDropdown] = useState(null)
 
     const handleOnChange = useCallback((e) => {
         const value = e.target.value
@@ -49,15 +51,17 @@ const BuyerCard = () => {
             setIsError(false)
             try {
                 const response = await axios.get(
-                    `${baseURL}Sales/GetBuyerDetails?search=${SearchBuyer}`
+                    `${baseURL}Sales/GetBuyerDetails?search=${SearchBuyer}`,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
                 )
                 setData(response.data)
             } catch (err) {
                 setIsError(true)
-                console.log(
-                    { err },
-                    err.response.data.responseException.exceptionMessage[0]
-                )
                 setError(
                     err.response.data.responseException.exceptionMessage[0]
                 )
@@ -70,15 +74,24 @@ const BuyerCard = () => {
         fetchBuyerData()
     }, [SearchBuyer])
 
+    useEffect(() => {
+        if (!isEditable) {
+            setSelectedBuyer(null)
+            localStorage.removeItem('buyerId')
+        }
+    }, [isEditable])
+
     const getBuyerDetails = (id) => {
         const buyerData = data?.data.find((item) => item.buyerId === id)
         localStorage.setItem('buyerId', buyerData.id)
+        console.log(buyerData?.id, 'buyerId')
         setSelectedBuyer(buyerData)
         setIsOpen(false)
         setSearchBuyer('')
-        // console.log(selectedBuyer?.id)
         setData(null)
+        console.log(selectedBuyer)
     }
+
     const { data: BuyerCompanies, isLoading: isLoading1 } = useStatusData(
         'buyercompany',
         isEditable
@@ -89,6 +102,7 @@ const BuyerCard = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target
+        console.log({name,value})
         if (name === 'companyNameEn') {
             const selectedField = BuyerCompanies?.data.find(
                 (item) => item.status === value
@@ -171,9 +185,12 @@ const BuyerCard = () => {
                         />
                     ) : (
                         <span className="font-semibold flex gap-x-6 text-primary-600 text-lg overflow-hidden text-ellipsis whitespace-nowrap">
-                            {BuyerDetail.buyerId ||
-                                (selectedBuyer && selectedBuyer?.buyerId) ||
-                                'NA'}
+                            {(!BuyerDetail.buyerId ||
+                                BuyerDetail.buyerId == 'NA') &&
+                            !selectedBuyer
+                                ? 'NA'
+                                : (selectedBuyer && selectedBuyer?.buyerId) ||
+                                  BuyerDetail.buyerId}
                         </span>
                     )}
                 </div>
@@ -194,9 +211,12 @@ const BuyerCard = () => {
                         />
                     ) : (
                         <span className="font-semibold text-primary-600 text-lg overflow-hidden text-ellipsis whitespace-nowrap">
-                            {BuyerDetail.buyerName ||
-                                (selectedBuyer && selectedBuyer?.buyerName) ||
-                                'NA'}
+                            {(!BuyerDetail.buyerName ||
+                                BuyerDetail.buyerName == 'NA') &&
+                            !selectedBuyer
+                                ? 'NA'
+                                : (selectedBuyer && selectedBuyer?.buyerName) ||
+                                  BuyerDetail.buyerName}
                         </span>
                     )}
                 </div>
@@ -217,9 +237,12 @@ const BuyerCard = () => {
                         />
                     ) : (
                         <span className="font-semibold text-primary-600 text-lg overflow-hidden text-ellipsis whitespace-nowrap">
-                            {BuyerDetail.email ||
-                                (selectedBuyer && selectedBuyer?.email) ||
-                                'NA'}
+                            {(!BuyerDetail.email ||
+                                BuyerDetail.email == 'NA') &&
+                            !selectedBuyer
+                                ? 'NA'
+                                : (selectedBuyer && selectedBuyer?.email) ||
+                                  BuyerDetail.email}
                         </span>
                     )}
                 </div>
@@ -240,9 +263,12 @@ const BuyerCard = () => {
                         />
                     ) : (
                         <span className="font-semibold text-primary-600 text-lg overflow-hidden text-ellipsis whitespace-nowrap">
-                            {BuyerDetail.mobile ||
-                                (selectedBuyer && selectedBuyer?.mobile) ||
-                                'NA'}
+                            {(!BuyerDetail.mobile ||
+                                BuyerDetail.mobile == 'NA') &&
+                            !selectedBuyer
+                                ? 'NA'
+                                : (selectedBuyer && selectedBuyer?.mobile) ||
+                                  BuyerDetail.mobile}
                         </span>
                     )}
                 </div>
@@ -261,13 +287,18 @@ const BuyerCard = () => {
                                     selectedBuyer?.companyNameEn) ||
                                 BuyerDetail.companyNameEn
                             }
+                            openDropdown={openDropdown}
+                            setOpenDropdown={setOpenDropdown}
                         />
                     ) : (
                         <span className="font-semibold text-primary-600 text-lg overflow-hidden text-ellipsis whitespace-nowrap">
-                            {BuyerDetail.companyNameEn ||
-                                (selectedBuyer &&
-                                    selectedBuyer?.companyNameEn) ||
-                                'NA'}
+                            {(!BuyerDetail.companyNameEn ||
+                                BuyerDetail.companyNameEn == 'NA') &&
+                            !selectedBuyer
+                                ? 'NA'
+                                : (selectedBuyer &&
+                                      selectedBuyer?.companyNameEn) ||
+                                  BuyerDetail.companyNameEn}
                         </span>
                     )}
                 </div>
